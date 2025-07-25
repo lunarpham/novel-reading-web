@@ -2,16 +2,22 @@ import express from "express";
 import dotenv from "dotenv";
 import { Constants } from "./lib/constants/index";
 import authRoutes from "./routes/auth.route";
+import userRoutes from "./routes/user.route";
 import { setupSwagger } from "./lib/swagger/config";
+import cors from "cors";
 
 dotenv.config();
 
 const app = express();
 const PORT = Constants.PORT;
+const HOST = Constants.HOST;
+
+app.use(cors());
 
 setupSwagger(app);
 app.use(express.json());
 app.use("/api/auth", authRoutes);
+app.use("/api/users", userRoutes);
 
 app.get("/health", (req, res) => {
   res.status(200).json({
@@ -31,8 +37,6 @@ app.get("/", (req, res) => {
     health: "/health",
   });
 });
-
-const HOST = "0.0.0.0";
 
 async function startServer(): Promise<void> {
   try {

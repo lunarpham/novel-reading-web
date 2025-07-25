@@ -4,6 +4,8 @@ import {
   Status,
   Tag,
   NotificationType,
+  Gender,
+  ReadingStatus,
 } from "@prisma/client";
 import * as bcrypt from "bcrypt";
 
@@ -24,7 +26,7 @@ async function main() {
         bio: "Passionate fantasy writer and bookworm. Love creating magical worlds!",
         dateOfBirth: new Date("1995-03-15"),
         avatarUrl: "https://example.com/avatars/alice.jpg",
-        gender: "Female",
+        gender: Gender.female,
       },
     }),
     prisma.user.create({
@@ -37,7 +39,7 @@ async function main() {
         bio: "Sci-fi enthusiast and part-time writer. Always exploring new galaxies in my stories.",
         dateOfBirth: new Date("1988-07-22"),
         avatarUrl: "https://example.com/avatars/bob.jpg",
-        gender: "Male",
+        gender: Gender.male,
       },
     }),
     prisma.user.create({
@@ -50,7 +52,7 @@ async function main() {
         bio: "Romance writer who believes in happily ever after. Currently working on my debut novel.",
         dateOfBirth: new Date("1992-11-08"),
         avatarUrl: "https://example.com/avatars/carol.jpg",
-        gender: "Female",
+        gender: Gender.female,
       },
     }),
     prisma.user.create({
@@ -63,7 +65,7 @@ async function main() {
         bio: "Mystery and thriller writer. Love crafting suspenseful plots that keep readers guessing.",
         dateOfBirth: new Date("1985-01-30"),
         avatarUrl: "https://example.com/avatars/david.jpg",
-        gender: "Male",
+        gender: Gender.male,
       },
     }),
     prisma.user.create({
@@ -76,7 +78,7 @@ async function main() {
         bio: "Platform administrator ensuring the best experience for all users.",
         dateOfBirth: new Date("1980-05-12"),
         avatarUrl: "https://example.com/avatars/admin.jpg",
-        gender: "Non-binary",
+        gender: Gender.prefer_not_to_say,
       },
     }),
   ]);
@@ -229,11 +231,12 @@ async function main() {
   console.log("📚 Created stories");
 
   // Create chapters for each story
+  const allChapters = [];
   for (const story of stories) {
     const chapterCount = Math.floor(Math.random() * 8) + 3; // 3-10 chapters per story
 
     for (let i = 0; i < chapterCount; i++) {
-      await prisma.chapter.create({
+      const chapter = await prisma.chapter.create({
         data: {
           sortIndex: i + 1,
           title: `Chapter ${i + 1}: ${generateChapterTitle()}`,
@@ -243,6 +246,7 @@ async function main() {
           wordCount: Math.floor(Math.random() * 3000) + 1000, // 1000-4000 words
         },
       });
+      allChapters.push(chapter);
     }
   }
 
@@ -269,7 +273,7 @@ async function main() {
 
   console.log("💬 Created comments");
 
-  // Create user libraries (reading lists)
+  // Create user libraries (reading lists) with updated reading status
   for (const user of users) {
     // Each user adds 2-3 stories to their library
     const storyCount = Math.floor(Math.random() * 2) + 2;
@@ -279,10 +283,41 @@ async function main() {
       .slice(0, storyCount);
 
     for (const story of userStories) {
+      const readingStatuses = [
+        ReadingStatus.plan_to_read,
+        ReadingStatus.reading,
+        ReadingStatus.completed,
+        ReadingStatus.on_hold,
+        ReadingStatus.dropped,
+        ReadingStatus.re_reading,
+      ];
+
+      const randomStatus =
+        readingStatuses[Math.floor(Math.random() * readingStatuses.length)];
+
+      // Get chapters for this story to set current chapter
+      const storyChapters = allChapters.filter(
+        (chapter) => chapter.storyId === story.id
+      );
+      const currentChapter =
+        randomStatus === ReadingStatus.reading && storyChapters.length > 0
+          ? storyChapters[Math.floor(Math.random() * storyChapters.length)].id
+          : null;
+
       await prisma.userLibrary.create({
         data: {
           userId: user.id,
           storyId: story.id,
+          readingStatus: randomStatus,
+          currentChapterId: currentChapter,
+          lastReadAt:
+            randomStatus === ReadingStatus.reading ||
+            randomStatus === ReadingStatus.completed
+              ? new Date(
+                  Date.now() -
+                    Math.floor(Math.random() * 7 * 24 * 60 * 60 * 1000)
+                ) // Within last 7 days
+              : null,
         },
       });
     }
@@ -353,7 +388,7 @@ async function main() {
   console.log("✅ Seed completed successfully!");
 }
 
-// Helper functions
+// ...existing helper functions remain the same...
 function generateChapterTitle(): string {
   const titles = [
     "The Journey Begins",
