@@ -1,15 +1,38 @@
-import express, { Request, Response } from "express";
+import express from "express";
 import dotenv from "dotenv";
+import { Constants } from "./lib/constants/index";
+import authRoutes from "./routes/auth.route";
+import { setupSwagger } from "./lib/swagger/config";
 
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 3000;
-const HOST = "0.0.0.0";
+const PORT = Constants.PORT;
 
-app.get("/", (req: Request, res: Response) => {
-  res.send("Hello, World!");
+setupSwagger(app);
+app.use(express.json());
+app.use("/api/auth", authRoutes);
+
+app.get("/health", (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: "Server is healthy",
+    timestamp: new Date().toISOString(),
+    version: "1.0.0",
+  });
 });
+
+// Root endpoint
+app.get("/", (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: "Welcome to Wattpad Clone API",
+    documentation: "/api-docs",
+    health: "/health",
+  });
+});
+
+const HOST = "0.0.0.0";
 
 async function startServer(): Promise<void> {
   try {
@@ -18,6 +41,7 @@ async function startServer(): Promise<void> {
     });
   } catch (error) {
     console.error("Error starting the server:", error);
+    process.exit(1);
   }
 }
 
