@@ -6,7 +6,6 @@ import {
   generateRefreshToken,
   TokenResponse,
 } from "../lib/utils/jwt-token";
-import { User } from "@prisma/client";
 
 export class AuthController {
   private userService: UserService;

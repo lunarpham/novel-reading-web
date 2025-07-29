@@ -45,4 +45,45 @@ export class UserService {
       data,
     });
   }
+
+  async followUser(
+    followingUserId: number,
+    followedUserId: number
+  ): Promise<void> {
+    await prisma.follow.create({
+      data: {
+        followingUserId,
+        followedUserId,
+      },
+    });
+  }
+
+  async isUserFollowing(
+    followingUserId: number,
+    followedUserId: number
+  ): Promise<boolean> {
+    const follow = await prisma.follow.findUnique({
+      where: {
+        followingUserId_followedUserId: {
+          followingUserId,
+          followedUserId,
+        },
+      },
+    });
+    return !!follow;
+  }
+
+  async unfollowUser(
+    followingUserId: number,
+    followedUserId: number
+  ): Promise<void> {
+    await prisma.follow.delete({
+      where: {
+        followingUserId_followedUserId: {
+          followingUserId,
+          followedUserId,
+        },
+      },
+    });
+  }
 }

@@ -182,6 +182,370 @@ const options = {
           },
         },
       },
+      "/api/users/{id}": {
+        get: {
+          summary: "Get user profile",
+          description: "Retrieve user profile information by user ID",
+          tags: ["Users"],
+          parameters: [
+            {
+              name: "id",
+              in: "path",
+              required: true,
+              description: "User ID",
+              schema: {
+                type: "integer",
+                minimum: 1,
+              },
+            },
+          ],
+          responses: {
+            200: {
+              description: "User profile retrieved successfully",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      success: {
+                        type: "boolean",
+                        example: true,
+                      },
+                      data: {
+                        $ref: "#/components/schemas/User",
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            400: {
+              description: "Invalid user ID",
+              content: {
+                "application/json": {
+                  schema: {
+                    $ref: "#/components/schemas/ErrorResponse",
+                  },
+                },
+              },
+            },
+            404: {
+              description: "User not found",
+              content: {
+                "application/json": {
+                  schema: {
+                    $ref: "#/components/schemas/ErrorResponse",
+                  },
+                },
+              },
+            },
+            500: {
+              description: "Internal server error",
+              content: {
+                "application/json": {
+                  schema: {
+                    $ref: "#/components/schemas/ErrorResponse",
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      "/api/users/{id}/following": {
+        post: {
+          summary: "Follow a user",
+          description: "Follow another user",
+          tags: ["Users"],
+          security: [
+            {
+              BearerAuth: [],
+            },
+          ],
+          parameters: [
+            {
+              name: "id",
+              in: "path",
+              required: true,
+              description: "ID of the user who wants to follow someone",
+              schema: {
+                type: "integer",
+                minimum: 1,
+              },
+            },
+          ],
+          requestBody: {
+            required: true,
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    followedUserId: {
+                      type: "integer",
+                      description: "ID of the user to follow",
+                      example: 2,
+                    },
+                  },
+                  required: ["followedUserId"],
+                },
+                examples: {
+                  example1: {
+                    summary: "Follow user example",
+                    value: {
+                      followedUserId: 2,
+                    },
+                  },
+                },
+              },
+            },
+          },
+          responses: {
+            201: {
+              description: "Successfully followed user",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      success: {
+                        type: "boolean",
+                        example: true,
+                      },
+                      message: {
+                        type: "string",
+                        example: "Successfully followed user",
+                      },
+                      data: {
+                        type: "object",
+                        properties: {
+                          followingUserId: {
+                            type: "integer",
+                            example: 1,
+                          },
+                          followedUserId: {
+                            type: "integer",
+                            example: 2,
+                          },
+                          followedUser: {
+                            type: "object",
+                            properties: {
+                              id: {
+                                type: "integer",
+                                example: 2,
+                              },
+                              username: {
+                                type: "string",
+                                example: "jane_doe",
+                              },
+                              displayName: {
+                                type: "string",
+                                example: "Jane Doe",
+                              },
+                              avatarUrl: {
+                                type: "string",
+                                nullable: true,
+                                example: "https://example.com/avatar.jpg",
+                              },
+                            },
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            400: {
+              description:
+                "Bad request (invalid user ID, already following, or trying to follow self)",
+              content: {
+                "application/json": {
+                  schema: {
+                    $ref: "#/components/schemas/ErrorResponse",
+                  },
+                },
+              },
+            },
+            401: {
+              description: "Unauthorized",
+              content: {
+                "application/json": {
+                  schema: {
+                    $ref: "#/components/schemas/ErrorResponse",
+                  },
+                },
+              },
+            },
+            404: {
+              description: "User not found",
+              content: {
+                "application/json": {
+                  schema: {
+                    $ref: "#/components/schemas/ErrorResponse",
+                  },
+                },
+              },
+            },
+            500: {
+              description: "Internal server error",
+              content: {
+                "application/json": {
+                  schema: {
+                    $ref: "#/components/schemas/ErrorResponse",
+                  },
+                },
+              },
+            },
+          },
+        },
+        delete: {
+          summary: "Unfollow a user",
+          description: "Unfollow a user that you are currently following",
+          tags: ["Users"],
+          security: [
+            {
+              BearerAuth: [],
+            },
+          ],
+          parameters: [
+            {
+              name: "id",
+              in: "path",
+              required: true,
+              description: "ID of the user who wants to unfollow someone",
+              schema: {
+                type: "integer",
+                minimum: 1,
+              },
+            },
+          ],
+          requestBody: {
+            required: true,
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    followedUserId: {
+                      type: "integer",
+                      description: "ID of the user to unfollow",
+                      example: 2,
+                    },
+                  },
+                  required: ["followedUserId"],
+                },
+                examples: {
+                  example1: {
+                    summary: "Unfollow user example",
+                    value: {
+                      followedUserId: 2,
+                    },
+                  },
+                },
+              },
+            },
+          },
+          responses: {
+            200: {
+              description: "Successfully unfollowed user",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      success: {
+                        type: "boolean",
+                        example: true,
+                      },
+                      message: {
+                        type: "string",
+                        example: "Successfully unfollowed user",
+                      },
+                      data: {
+                        type: "object",
+                        properties: {
+                          followingUserId: {
+                            type: "integer",
+                            example: 1,
+                          },
+                          followedUserId: {
+                            type: "integer",
+                            example: 2,
+                          },
+                          unfollowedUser: {
+                            type: "object",
+                            properties: {
+                              id: {
+                                type: "integer",
+                                example: 2,
+                              },
+                              username: {
+                                type: "string",
+                                example: "jane_doe",
+                              },
+                              displayName: {
+                                type: "string",
+                                example: "Jane Doe",
+                              },
+                              avatarUrl: {
+                                type: "string",
+                                nullable: true,
+                                example: "https://example.com/avatar.jpg",
+                              },
+                            },
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            400: {
+              description:
+                "Bad request (invalid user ID, not following, or trying to unfollow self)",
+              content: {
+                "application/json": {
+                  schema: {
+                    $ref: "#/components/schemas/ErrorResponse",
+                  },
+                },
+              },
+            },
+            401: {
+              description: "Unauthorized",
+              content: {
+                "application/json": {
+                  schema: {
+                    $ref: "#/components/schemas/ErrorResponse",
+                  },
+                },
+              },
+            },
+            404: {
+              description: "User not found",
+              content: {
+                "application/json": {
+                  schema: {
+                    $ref: "#/components/schemas/ErrorResponse",
+                  },
+                },
+              },
+            },
+            500: {
+              description: "Internal server error",
+              content: {
+                "application/json": {
+                  schema: {
+                    $ref: "#/components/schemas/ErrorResponse",
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
       "/health": {
         get: {
           summary: "Health check endpoint",
