@@ -3,19 +3,21 @@ import dotenv from "dotenv";
 import { Constants } from "./lib/constants/index";
 import authRoutes from "./routes/auth.route";
 import userRoutes from "./routes/user.route";
-import { setupSwagger } from "./lib/swagger/config";
+import swaggerUi from "swagger-ui-express";
+import swaggerDocument from "./swagger.json";
 import cors from "cors";
-
+import "./types";
 dotenv.config();
 
-const app = express();
+let app = express();
+
 const PORT = Constants.PORT;
 const HOST = Constants.HOST;
 
 app.use(cors());
 
-setupSwagger(app);
 app.use(express.json());
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 

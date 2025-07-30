@@ -14,26 +14,58 @@ export class UserService {
     return user;
   }
 
+  async getAllUsers(
+    page: number = 1,
+    limit: number = 10
+  ): Promise<{ users: Partial<User>[]; total: number }> {
+    const skip = (page - 1) * limit;
+
+    const [users, total] = await Promise.all([
+      prisma.user.findMany({
+        where: { deletedAt: null },
+        skip,
+        take: limit,
+        orderBy: { id: "asc" },
+        select: {
+          id: true,
+          email: true,
+          username: true,
+          displayName: true,
+          bio: true,
+          avatarUrl: true,
+          role: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      }),
+      prisma.user.count({
+        where: { deletedAt: null },
+      }),
+    ]);
+
+    return { users, total };
+  }
+
   async getUserByEmail(email: string): Promise<User | null> {
     return prisma.user.findUnique({
-      where: { email },
+      where: { email, deletedAt: null },
     });
   }
   async getUserByUsername(username: string): Promise<User | null> {
     return prisma.user.findUnique({
-      where: { username },
+      where: { username, deletedAt: null },
     });
   }
 
   async getUserById(id: number): Promise<User | null> {
     return prisma.user.findUnique({
-      where: { id },
+      where: { id, deletedAt: null },
     });
   }
 
   async getUserRole(id: number): Promise<string | null> {
     const user = await prisma.user.findUnique({
-      where: { id },
+      where: { id, deletedAt: null },
       select: { role: true },
     });
     return user?.role || null;

@@ -1,188 +1,110 @@
 import { Request, Response, NextFunction } from "express";
 import {
   verifyAccessToken,
-  verifyRefreshToken,
   extractTokenFromHeader,
   JwtPayload,
 } from "../utils/jwt-token";
+
 import { UserService } from "../../services/user.service";
 import { Role } from "@prisma/client";
+import "../../types";
 
-declare global {
-  namespace Express {
-    interface Request {
-      user?: JwtPayload;
-    }
-  }
-}
+const userService = new UserService();
 
-export class AuthMiddleware {
-  private userService: UserService;
+export const authenticate = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    // Extract token from Authorization header
+    const authHeader = req.headers.authorization;
+    const token = extractTokenFromHeader(authHeader);
 
-  constructor() {
-    this.userService = new UserService();
-  }
-
-  async authenticate(
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ): Promise<void> {
-    try {
-      const authHeader = req.headers.authorization;
-      const token = extractTokenFromHeader(authHeader);
-
-      if (!token) {
-        res.status(401).json({
-          success: false,
-          message: "No token provided!",
-        });
-        return;
-      }
-
-      // Verify the access token
-      const decodedToken = verifyAccessToken(token);
-
-      const user = await this.userService.getUserById(decodedToken.userId);
-      if (!user) {
-        res.status(401).json({
-          success: false,
-          message: "Invalid token or user does not exist",
-        });
-        return;
-      }
-
-      // Prevent access if the user is restricted by admin
-      if (user.isRestricted) {
-        res.status(403).json({
-          success: false,
-          message: "User is restricted from accessing this resource",
-        });
-        return;
-      }
-
-      req.user = decodedToken;
-      next();
-    } catch (error) {
-      console.error("Authentication error:", error);
+    // If token is not provided, return 401 Unauthorized
+    if (!token) {
       res.status(401).json({
         success: false,
-        message: error instanceof Error ? error.message : "Invalid token",
+        message: "Access token is missing",
       });
+      return;
     }
+
+    // Verify the token and get user information
+    const decoded = verifyAccessToken(token) as JwtPayload;
+    // Fetch user from the database to ensure they are not restricted
+    const user = await userService.getUserById(decoded.userId);
+
+    // If user is not found or is restricted, return 401 Unauthorized
+    if (!user || user.isRestricted) {
+      res.status(401).json({
+        success: false,
+        message: "User not found or restricted",
+      });
+      return;
+    }
+
+    // Attach user information to the request object
+    req.user = { ...decoded, role: user.role };
+    next();
+  } catch (error) {
+    res.status(401).json({
+      success: false,
+      message: "Unauthorized",
+    });
+    return;
   }
+};
 
-  requireOwnership = (getResourceId: (req: Request) => Promise<number>) => {
-    return async (
-      req: Request,
-      res: Response,
-      next: NextFunction
-    ): Promise<void> => {
-      try {
-        if (!req.user) {
-          res.status(401).json({
-            success: false,
-            message: "Unauthorized access",
-          });
-          return;
-        }
+export const requireAdmin = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const requestUser = req.user!;
 
-        // Check if the user has the required role or is the owner of the resource
-        const resourceOwnerId = await getResourceId(req);
-        const userRole = await this.userService.getUserRole(req.user.userId);
+    if (requestUser.role !== Role.admin) {
+      res.status(403).json({
+        success: false,
+        message: "Forbidden: Admin access required",
+      });
+      return;
+    }
 
-        if (userRole === Role.admin || resourceOwnerId === req.user.userId) {
-          next();
-          return;
-        }
-        res.status(403).json({
-          success: false,
-          message: "You do not have permission to access this resource",
-        });
-      } catch (error) {
-        console.error("Ownership check error:", error);
-        res.status(500).json({
-          success: false,
-          message: "Internal server error",
-          error: error instanceof Error ? error.message : "Unknown error",
-        });
-      }
-    };
+    // Double-check the role from database
+    const userRole = await userService.getUserRole(requestUser.userId);
+    if (userRole !== Role.admin) {
+      res.status(403).json({
+        success: false,
+        message: "Forbidden: Admin access required",
+      });
+      return;
+    }
+
+    next();
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+    return;
+  }
+};
+
+export const requireSelfOnly = (resourceParam: string = "id") => {
+  return (req: Request, res: Response, next: NextFunction): void => {
+    const resourceUserId = Number(req.params[resourceParam]);
+    const requestUser = req.user!;
+
+    if (requestUser.userId !== resourceUserId) {
+      res.status(403).json({
+        success: false,
+        message: "You can only perform this action on your own account",
+      });
+      return;
+    }
+
+    next();
   };
-
-  requireSelfOrAdmin = () => {
-    return async (
-      req: Request,
-      res: Response,
-      next: NextFunction
-    ): Promise<void> => {
-      try {
-        if (!req.user) {
-          res.status(401).json({
-            success: false,
-            message: "Unauthorized access",
-          });
-          return;
-        }
-
-        const requestedUserId = Number(req.params.id);
-        const userRole = await this.userService.getUserRole(req.user.userId);
-
-        // Allow if user is admin or accessing their own resources
-        if (userRole === Role.admin || req.user.userId === requestedUserId) {
-          next();
-          return;
-        }
-
-        res.status(403).json({
-          success: false,
-          message: "You can only access your own resources",
-        });
-      } catch (error) {
-        console.error("Authorization check error:", error);
-        res.status(500).json({
-          success: false,
-          message: "Internal server error",
-          error: error instanceof Error ? error.message : "Unknown error",
-        });
-      }
-    };
-  };
-
-  requireAdmin = () => {
-    return async (
-      req: Request,
-      res: Response,
-      next: NextFunction
-    ): Promise<void> => {
-      try {
-        if (!req.user) {
-          res.status(401).json({
-            success: false,
-            message: "Unauthorized access",
-          });
-          return;
-        }
-
-        const userRole = await this.userService.getUserRole(req.user.userId);
-
-        if (userRole === Role.admin) {
-          next();
-          return;
-        }
-
-        res.status(403).json({
-          success: false,
-          message: "Admin access required",
-        });
-      } catch (error) {
-        console.error("Admin check error:", error);
-        res.status(500).json({
-          success: false,
-          message: "Internal server error",
-          error: error instanceof Error ? error.message : "Unknown error",
-        });
-      }
-    };
-  };
-}
+};

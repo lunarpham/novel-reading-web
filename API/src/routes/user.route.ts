@@ -2,14 +2,25 @@ import { Router, Request, Response } from "express";
 import { UserController } from "../controllers/user.controller";
 import {
   userValidationRules,
+  validateUserProfileUpdate,
   handleValidationErrors,
+  validateFollowUserId,
+  validateUserPasswordChange,
 } from "../lib/middleware/user-validator";
-import { AuthMiddleware } from "../lib/middleware/auth-middleware";
+import {
+  authenticate,
+  requireAdmin,
+  requireSelfOnly,
+} from "../lib/middleware/auth-middleware";
 
 const router = Router();
 const userController = new UserController();
-const authMiddleware = new AuthMiddleware();
 
+router.get("/", (req: Request, res: Response) =>
+  userController.getAllUsers(req, res)
+);
+
+// Get user profile (public)
 router.get(
   "/:id",
   userValidationRules.userId(),
@@ -17,28 +28,58 @@ router.get(
   (req: Request, res: Response) => userController.getUserProfile(req, res)
 );
 
-router.post(
-  "/:id/following",
+// Update user profile (self only)
+router.put(
+  "/:id",
+  authenticate,
+  requireSelfOnly(),
   userValidationRules.userId(),
+  validateUserProfileUpdate,
   handleValidationErrors,
-  (req: Request, res: Response) =>
-    authMiddleware.authenticate(req, res, () =>
-      authMiddleware.requireSelfOrAdmin()(req, res, () =>
-        userController.followUser(req, res)
-      )
-    )
+  (req: Request, res: Response) => userController.updateUserProfile(req, res)
 );
 
+// Update user password (self only)
+router.put(
+  "/:id/password",
+  authenticate,
+  requireSelfOnly(),
+  userValidationRules.userId(),
+  validateUserPasswordChange,
+  handleValidationErrors,
+  (req: Request, res: Response) => userController.updateUserPassword(req, res)
+);
+
+// Delete user (admin only)
 router.delete(
-  "/:id/following",
+  "/:id",
+  authenticate,
+  requireAdmin,
   userValidationRules.userId(),
   handleValidationErrors,
-  (req: Request, res: Response) =>
-    authMiddleware.authenticate(req, res, () =>
-      authMiddleware.requireSelfOrAdmin()(req, res, () =>
-        userController.unfollowUser(req, res)
-      )
-    )
+  (req: Request, res: Response) => userController.deleteUser(req, res)
+);
+
+// Follow user (self only)
+router.post(
+  "/:id/following",
+  authenticate,
+  requireSelfOnly(),
+  userValidationRules.userId(),
+  validateFollowUserId.followedUserId(),
+  handleValidationErrors,
+  (req: Request, res: Response) => userController.followUser(req, res)
+);
+
+// Unfollow user (self only)
+router.delete(
+  "/:id/following",
+  authenticate,
+  requireSelfOnly(),
+  userValidationRules.userId(),
+  validateFollowUserId.followedUserId(),
+  handleValidationErrors,
+  (req: Request, res: Response) => userController.unfollowUser(req, res)
 );
 
 export default router;
