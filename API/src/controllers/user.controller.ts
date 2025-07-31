@@ -14,8 +14,8 @@ export class UserController {
   // Get all users with pagination
   async getAllUsers(req: Request, res: Response): Promise<void> {
     try {
-      const page = parseInt(req.query.page as string) || 1;
-      const limit = parseInt(req.query.limit as string) || 10;
+      const page = parseInt(req.query.page as string, 10) || 1;
+      const limit = parseInt(req.query.limit as string, 10) || 10;
 
       const { users, total } = await this.userService.getAllUsers(page, limit);
 
@@ -86,6 +86,7 @@ export class UserController {
       // Validate that the user is not trying to update restricted fields
       const updatedData = req.body;
       const {
+        username,
         password,
         id,
         role,

@@ -9,7 +9,7 @@ import cors from "cors";
 import "./types";
 dotenv.config();
 
-let app = express();
+const app = express();
 
 const PORT = Constants.PORT;
 const HOST = Constants.HOST;

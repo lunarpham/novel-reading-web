@@ -6,6 +6,7 @@ import {
   handleValidationErrors,
   validateFollowUserId,
   validateUserPasswordChange,
+  queryPaginationRules,
 } from "../lib/middleware/user-validator";
 import {
   authenticate,
@@ -16,8 +17,11 @@ import {
 const router = Router();
 const userController = new UserController();
 
-router.get("/", (req: Request, res: Response) =>
-  userController.getAllUsers(req, res)
+router.get(
+  "/",
+  queryPaginationRules.pagination(),
+  handleValidationErrors,
+  (req: Request, res: Response) => userController.getAllUsers(req, res)
 );
 
 // Get user profile (public)

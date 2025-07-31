@@ -62,6 +62,15 @@ export const requireAdmin = async (
   next: NextFunction
 ): Promise<void> => {
   try {
+    // Ensure the user is authenticated
+    if (!req.user) {
+      res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+      return;
+    }
+
     const requestUser = req.user!;
 
     if (requestUser.role !== Role.admin) {

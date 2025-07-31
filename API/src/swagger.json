@@ -128,7 +128,7 @@
           "dateOfBirth": {
             "type": "string",
             "format": "date-time",
-            "description": "Date of birth (optional)"
+            "description": "Date of birth (optional, user must be between 13-120 years old)"
           },
           "avatarUrl": {
             "type": "string",
@@ -163,33 +163,33 @@
           "email": {
             "type": "string",
             "format": "email",
-            "description": "User email address"
+            "description": "User email address (optional)"
           },
           "displayName": {
             "type": "string",
             "minLength": 2,
             "maxLength": 50,
-            "description": "Display name"
+            "description": "Display name (optional)"
           },
           "bio": {
             "type": "string",
             "maxLength": 500,
-            "description": "User biography"
+            "description": "User biography (optional)"
           },
           "dateOfBirth": {
             "type": "string",
             "format": "date-time",
-            "description": "Date of birth"
+            "description": "Date of birth (optional, user must be between 13-120 years old)"
           },
           "avatarUrl": {
             "type": "string",
             "format": "uri",
-            "description": "Avatar image URL"
+            "description": "Avatar image URL (optional)"
           },
           "gender": {
             "type": "string",
             "enum": ["male", "female", "prefer_not_to_say"],
-            "description": "User gender"
+            "description": "User gender (optional)"
           }
         }
       },
@@ -206,7 +206,7 @@
             "minLength": 8,
             "maxLength": 128,
             "pattern": "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]",
-            "description": "New password"
+            "description": "New password (8-128 characters with uppercase, lowercase, number, and special character)"
           }
         }
       },
@@ -757,80 +757,6 @@
           },
           "409": {
             "description": "Username or email already exists",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal server error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      },
-      "delete": {
-        "summary": "Delete user account",
-        "description": "Soft delete user account (admin only)",
-        "tags": ["Users"],
-        "security": [
-          {
-            "BearerAuth": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "minimum": 1
-            },
-            "description": "User ID"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "User deleted successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden - admin only",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "User not found",
             "content": {
               "application/json": {
                 "schema": {
