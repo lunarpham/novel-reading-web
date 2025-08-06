@@ -1,11 +1,7 @@
 import { Request, Response, NextFunction } from "express";
-import {
-  verifyAccessToken,
-  extractTokenFromHeader,
-  JwtPayload,
-} from "../utils/jwt-token";
-
-import { UserService } from "../../services/user.service";
+import { tokenService } from "../../services/auth/token";
+import { JwtPayload } from "../../lib/dtos/authDto";
+import { UserService } from "../../services/user/_index";
 import { Role } from "@prisma/client";
 import "../../types";
 
@@ -19,7 +15,7 @@ export const authenticate = async (
   try {
     // Extract token from Authorization header
     const authHeader = req.headers.authorization;
-    const token = extractTokenFromHeader(authHeader);
+    const token = tokenService.extractTokenFromHeader(authHeader);
 
     // If token is not provided, return 401 Unauthorized
     if (!token) {
@@ -31,9 +27,9 @@ export const authenticate = async (
     }
 
     // Verify the token and get user information
-    const decoded = verifyAccessToken(token) as JwtPayload;
+    const decoded = tokenService.verifyAccessToken(token) as JwtPayload;
     // Fetch user from the database to ensure they are not restricted
-    const user = await userService.getUserById(decoded.userId);
+    const user = await userService.profile.getUserById(decoded.userId);
 
     // If user is not found or is restricted, return 401 Unauthorized
     if (!user || user.isRestricted) {
@@ -82,8 +78,8 @@ export const requireAdmin = async (
     }
 
     // Double-check the role from database
-    const userRole = await userService.getUserRole(requestUser.userId);
-    if (userRole !== Role.admin) {
+    const user = await userService.profile.getUserById(requestUser.userId);
+    if (!user || user.role !== Role.admin) {
       res.status(403).json({
         success: false,
         message: "Forbidden: Admin access required",

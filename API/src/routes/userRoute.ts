@@ -1,5 +1,5 @@
 import { Router, Request, Response } from "express";
-import { UserController } from "../controllers/user.controller";
+import { UserController } from "../controllers/userController";
 import {
   userValidationRules,
   validateUserProfileUpdate,
@@ -7,12 +7,12 @@ import {
   validateFollowUserId,
   validateUserPasswordChange,
   queryPaginationRules,
-} from "../lib/middleware/user-validator";
+} from "../lib/middleware/validator";
 import {
   authenticate,
   requireAdmin,
   requireSelfOnly,
-} from "../lib/middleware/auth-middleware";
+} from "../lib/middleware/auth";
 
 const router = Router();
 const userController = new UserController();
@@ -21,7 +21,7 @@ router.get(
   "/",
   queryPaginationRules.pagination(),
   handleValidationErrors,
-  (req: Request, res: Response) => userController.getAllUsers(req, res)
+  userController.getAllUsers
 );
 
 // Get user profile (public)
@@ -29,7 +29,7 @@ router.get(
   "/:id",
   userValidationRules.userId(),
   handleValidationErrors,
-  (req: Request, res: Response) => userController.getUserProfile(req, res)
+  userController.getUserProfile
 );
 
 // Update user profile (self only)
@@ -40,7 +40,7 @@ router.put(
   userValidationRules.userId(),
   validateUserProfileUpdate,
   handleValidationErrors,
-  (req: Request, res: Response) => userController.updateUserProfile(req, res)
+  userController.updateUserProfile
 );
 
 // Update user password (self only)
@@ -51,7 +51,7 @@ router.put(
   userValidationRules.userId(),
   validateUserPasswordChange,
   handleValidationErrors,
-  (req: Request, res: Response) => userController.updateUserPassword(req, res)
+  userController.updateUserPassword
 );
 
 // Delete user (admin only)
@@ -61,7 +61,7 @@ router.delete(
   requireAdmin,
   userValidationRules.userId(),
   handleValidationErrors,
-  (req: Request, res: Response) => userController.deleteUser(req, res)
+  userController.deleteUser
 );
 
 // Follow user (self only)
@@ -72,7 +72,7 @@ router.post(
   userValidationRules.userId(),
   validateFollowUserId.followedUserId(),
   handleValidationErrors,
-  (req: Request, res: Response) => userController.followUser(req, res)
+  userController.followUser
 );
 
 // Unfollow user (self only)
@@ -83,7 +83,7 @@ router.delete(
   userValidationRules.userId(),
   validateFollowUserId.followedUserId(),
   handleValidationErrors,
-  (req: Request, res: Response) => userController.unfollowUser(req, res)
+  userController.unfollowUser
 );
 
 export default router;

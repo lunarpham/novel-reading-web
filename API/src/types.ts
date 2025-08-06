@@ -1,4 +1,4 @@
-import { JwtPayload } from "./lib/utils/jwt-token";
+import { JwtPayload } from "./lib/dtos/authDto";
 import { Role } from "@prisma/client";
 
 declare global {

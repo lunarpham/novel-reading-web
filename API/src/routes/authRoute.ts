@@ -1,10 +1,10 @@
-import { Router, Request, Response } from "express";
-import { AuthController } from "../controllers/auth.controller";
+import { Router } from "express";
+import { AuthController } from "../controllers/authController";
 import {
   validateUserRegistration,
   validateUserLogin,
   handleValidationErrors,
-} from "../lib/middleware/user-validator";
+} from "../lib/middleware/validator";
 
 const router = Router();
 const authController = new AuthController();
@@ -13,14 +13,14 @@ router.post(
   "/register",
   validateUserRegistration,
   handleValidationErrors,
-  (req: Request, res: Response) => authController.register(req, res)
+  authController.register
 );
 
 router.post(
   "/login",
   validateUserLogin,
   handleValidationErrors,
-  (req: Request, res: Response) => authController.login(req, res)
+  authController.login
 );
 
 export default router;
