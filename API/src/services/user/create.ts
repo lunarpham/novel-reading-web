@@ -1,4 +1,4 @@
-import prisma from "../../prisma-client";
+import prisma from "../../config/prismaClient";
 import { User } from "@prisma/client";
 import { hashPassword } from "../../lib/utils/bcrypt";
 import { UserCreateData } from "../../lib/dtos/userDto";

@@ -1,4 +1,4 @@
-import prisma from "../../prisma-client";
+import prisma from "../../config/prismaClient";
 import { User } from "@prisma/client";
 import { hashPassword, comparePassword } from "../../lib/utils/bcrypt";
 import { AppError } from "../../lib/middleware/error";

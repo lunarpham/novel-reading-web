@@ -1,4 +1,4 @@
-import prisma from "../../prisma-client";
+import prisma from "../../config/prismaClient";
 import { User } from "@prisma/client";
 import {
   UserUpdateData,

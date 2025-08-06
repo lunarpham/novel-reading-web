@@ -1,4 +1,4 @@
-import prisma from "../../prisma-client";
+import prisma from "../../config/prismaClient";
 import { FollowData } from "../../lib/dtos/userDto";
 import { AppError } from "../../lib/middleware/error";
 
