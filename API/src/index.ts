@@ -17,8 +17,22 @@ const HOST = Constants.HOST;
 
 app.use(cors());
 
+const swaggerOptions = {
+  swaggerOptions: {
+    // Disable caching
+    supportedSubmitMethods: ["get", "post", "put", "delete", "patch"],
+    showRequestHeaders: true,
+    // Force reload
+    url: "/swagger.json?v=" + Date.now(),
+  },
+};
+
 app.use(express.json());
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+app.use(
+  "/api-docs",
+  swaggerUi.serve,
+  swaggerUi.setup(swaggerDocument, swaggerOptions)
+);
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use(errorHandler);

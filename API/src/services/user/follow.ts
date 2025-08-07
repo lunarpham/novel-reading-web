@@ -1,5 +1,9 @@
 import prisma from "../../config/prismaClient";
-import { FollowData } from "../../lib/dtos/userDto";
+import {
+  FollowData,
+  PaginatedResponse,
+  PaginationParams,
+} from "../../lib/dtos/userDto";
 import { AppError } from "../../lib/middleware/error";
 
 export class FollowService {
@@ -122,5 +126,127 @@ export class FollowService {
     });
 
     return !!follow;
+  }
+
+  async getFollowingUsers(
+    userId: number,
+    params: PaginationParams = { page: 1, limit: 10 }
+  ): Promise<PaginatedResponse<FollowData>> {
+    const { page = 1, limit = 10 } = params;
+    const skip = (page - 1) * limit;
+
+    // Check if user exists
+    const user = await prisma.user.findUnique({
+      where: { id: userId, deletedAt: null },
+    });
+
+    if (!user) {
+      throw new AppError(404, "User not found");
+    }
+
+    const [follows, total] = await Promise.all([
+      prisma.follow.findMany({
+        where: { followingUserId: userId },
+        skip,
+        take: limit,
+        include: {
+          followedUser: {
+            select: {
+              id: true,
+              username: true,
+              displayName: true,
+              avatarUrl: true,
+            },
+          },
+        },
+        orderBy: { createdAt: "desc" },
+      }),
+      prisma.follow.count({
+        where: { followingUserId: userId },
+      }),
+    ]);
+
+    const followData: FollowData[] = follows.map((follow) => ({
+      followingUserId: follow.followingUserId,
+      followedUserId: follow.followedUserId,
+      followedUser: {
+        id: follow.followedUser.id,
+        username: follow.followedUser.username,
+        displayName: follow.followedUser.displayName,
+        avatarUrl: follow.followedUser.avatarUrl,
+      },
+    }));
+
+    return {
+      data: followData,
+      pagination: {
+        currentPage: page,
+        totalItems: total,
+        totalPages: Math.ceil(total / limit),
+        hasNext: page < Math.ceil(total / limit),
+        hasPrev: page > 1,
+      },
+    };
+  }
+
+  async getFollowers(
+    userId: number,
+    params: PaginationParams = { page: 1, limit: 10 }
+  ): Promise<PaginatedResponse<FollowData>> {
+    const { page = 1, limit = 10 } = params;
+    const skip = (page - 1) * limit;
+
+    // Check if user exists
+    const user = await prisma.user.findUnique({
+      where: { id: userId, deletedAt: null },
+    });
+
+    if (!user) {
+      throw new AppError(404, "User not found");
+    }
+
+    const [follows, total] = await Promise.all([
+      prisma.follow.findMany({
+        where: { followedUserId: userId },
+        skip,
+        take: limit,
+        include: {
+          followingUser: {
+            select: {
+              id: true,
+              username: true,
+              displayName: true,
+              avatarUrl: true,
+            },
+          },
+        },
+        orderBy: { createdAt: "desc" },
+      }),
+      prisma.follow.count({
+        where: { followedUserId: userId },
+      }),
+    ]);
+
+    const followData: FollowData[] = follows.map((follow) => ({
+      followingUserId: follow.followingUserId,
+      followedUserId: follow.followedUserId,
+      followedUser: {
+        id: follow.followingUser.id,
+        username: follow.followingUser.username,
+        displayName: follow.followingUser.displayName,
+        avatarUrl: follow.followingUser.avatarUrl,
+      },
+    }));
+
+    return {
+      data: followData,
+      pagination: {
+        currentPage: page,
+        totalItems: total,
+        totalPages: Math.ceil(total / limit),
+        hasNext: page < Math.ceil(total / limit),
+        hasPrev: page > 1,
+      },
+    };
   }
 }

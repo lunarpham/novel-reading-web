@@ -139,4 +139,47 @@ export class UserController {
       res.status(200).json(response);
     }
   );
+
+  getFollowingUsers = asyncHandler(
+    async (req: Request, res: Response): Promise<void> => {
+      const userId = Number(req.params.id);
+      const params: PaginationParams = {
+        page: parseInt(req.query.page as string, 10) || 1,
+        limit: parseInt(req.query.limit as string, 10) || 10,
+      };
+
+      const result = await this.userService.follow.getFollowingUsers(
+        userId,
+        params
+      );
+
+      const response: ApiResponse = {
+        success: true,
+        message: "Following users retrieved successfully",
+        data: result,
+      };
+
+      res.status(200).json(response);
+    }
+  );
+
+  getFollowers = asyncHandler(
+    async (req: Request, res: Response): Promise<void> => {
+      const userId = Number(req.params.id);
+      const params: PaginationParams = {
+        page: parseInt(req.query.page as string, 10) || 1,
+        limit: parseInt(req.query.limit as string, 10) || 10,
+      };
+
+      const result = await this.userService.follow.getFollowers(userId, params);
+
+      const response: ApiResponse = {
+        success: true,
+        message: "Followers retrieved successfully",
+        data: result,
+      };
+
+      res.status(200).json(response);
+    }
+  );
 }

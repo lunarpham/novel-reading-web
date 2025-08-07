@@ -7,6 +7,7 @@ import {
   PaginationParams,
 } from "../../lib/dtos/userDto";
 import { AppError } from "../../lib/middleware/error";
+import { filterAllowedFields } from "../../lib/utils/filter";
 
 export class UserProfileService {
   async getUserById(id: number): Promise<User | null> {
@@ -46,9 +47,27 @@ export class UserProfileService {
       throw new AppError(404, "User not found");
     }
 
+    const allowedFields: (keyof UserUpdateData)[] = [
+      "email",
+      "displayName",
+      "bio",
+      "dateOfBirth",
+      "avatarUrl",
+      "gender",
+    ];
+
+    const filteredData = filterAllowedFields<UserUpdateData>(
+      data,
+      allowedFields
+    );
+
+    if (Object.keys(filteredData).length === 0) {
+      throw new AppError(400, "No valid fields provided for update");
+    }
+
     // Check if email is being updated and if it already exists
-    if (data.email && data.email !== existingUser.email) {
-      const existingEmailUser = await this.getUserByEmail(data.email);
+    if (filteredData.email && filteredData.email !== existingUser.email) {
+      const existingEmailUser = await this.getUserByEmail(filteredData.email);
       if (existingEmailUser && existingEmailUser.id !== id) {
         throw new AppError(409, "User with this email already exists");
       }
@@ -56,7 +75,7 @@ export class UserProfileService {
 
     const updatedUser = await prisma.user.update({
       where: { id },
-      data,
+      data: filteredData,
     });
 
     const { password, ...userWithoutPassword } = updatedUser;
