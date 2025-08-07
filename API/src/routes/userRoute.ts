@@ -86,4 +86,20 @@ router.delete(
   userController.unfollowUser
 );
 
+router.get(
+  "/:id/following",
+  userValidationRules.userId(),
+  queryPaginationRules.pagination(),
+  handleValidationErrors,
+  userController.getFollowingUsers
+);
+
+router.get(
+  "/:id/followers",
+  userValidationRules.userId(),
+  queryPaginationRules.pagination(),
+  handleValidationErrors,
+  userController.getFollowers
+);
+
 export default router;
