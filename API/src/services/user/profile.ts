@@ -38,7 +38,10 @@ export class UserProfileService {
     return user || null;
   }
 
-  async updateProfile(id: number, data: UserUpdateData): Promise<User> {
+  async updateProfile(
+    id: number,
+    data: UserUpdateData
+  ): Promise<UserPublicProfile> {
     const existingUser = await prisma.user.findUnique({
       where: { id, deletedAt: null },
     });
@@ -79,7 +82,7 @@ export class UserProfileService {
     });
 
     const { password, ...userWithoutPassword } = updatedUser;
-    return userWithoutPassword as User;
+    return userWithoutPassword;
   }
 
   async getAllUsers(

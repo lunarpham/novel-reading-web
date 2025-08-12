@@ -8,7 +8,7 @@ export class PasswordService {
     userId: number,
     currentPassword: string,
     newPassword: string
-  ): Promise<User> {
+  ): Promise<Omit<User, "password">> {
     const user = await prisma.user.findUnique({
       where: { id: userId, deletedAt: null },
     });

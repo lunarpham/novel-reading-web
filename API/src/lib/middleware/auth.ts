@@ -3,6 +3,7 @@ import { tokenService } from "../../services/auth/token";
 import { JwtPayload } from "../../lib/dtos/authDto";
 import { UserService } from "../../services/user/_index";
 import { Role } from "@prisma/client";
+import { AppError } from "./error";
 import "../../types";
 
 const userService = new UserService();
@@ -44,10 +45,18 @@ export const authenticate = async (
     req.user = { ...decoded, role: user.role };
     next();
   } catch (error) {
-    res.status(401).json({
-      success: false,
-      message: "Unauthorized",
-    });
+    if (error instanceof AppError && error.statusCode === 401) {
+      res.status(401).json({
+        success: false,
+        message: error.message || "Unauthorized",
+      });
+    } else {
+      console.error("Authentication middleware error:", error);
+      res.status(500).json({
+        success: false,
+        message: "Internal server error",
+      });
+    }
     return;
   }
 };
@@ -99,6 +108,14 @@ export const requireAdmin = async (
 
 export const requireSelfOnly = (resourceParam: string = "id") => {
   return (req: Request, res: Response, next: NextFunction): void => {
+    if (!req.user) {
+      res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+      return;
+    }
+
     const resourceUserId = Number(req.params[resourceParam]);
     const requestUser = req.user!;
 

@@ -113,9 +113,16 @@ export class TokenService {
     return this.generateTokens(user);
   }
 
-  isTokenExpired(token: string): boolean {
+  isTokenExpired(
+    token: string,
+    tokenType: "access" | "refresh" = "access"
+  ): boolean {
     try {
-      jwt.verify(token, Constants.JWT_SECRET!);
+      const secret =
+        tokenType === "access"
+          ? Constants.JWT_SECRET!
+          : Constants.JWT_REFRESH_SECRET!;
+      jwt.verify(token, secret);
       return false;
     } catch (error) {
       if (error instanceof jwt.TokenExpiredError) {

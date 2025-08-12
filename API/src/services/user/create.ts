@@ -9,32 +9,35 @@ export class UserCreateService {
     // Validate required fields
     await this.validateUserData(data);
 
-    // Check if user already exists by email
-    const existingEmail = await prisma.user.findUnique({
-      where: { email: data.email, deletedAt: null },
-    });
+    // Prevent race conditions
+    return await prisma.$transaction(async (prisma) => {
+      // Check if user already exists by email
+      const existingEmail = await prisma.user.findUnique({
+        where: { email: data.email, deletedAt: null },
+      });
 
-    if (existingEmail) {
-      throw new AppError(409, "User with this email already exists");
-    }
+      if (existingEmail) {
+        throw new AppError(409, "User with this email already exists");
+      }
 
-    // Check if username already exists
-    const existingUsername = await prisma.user.findUnique({
-      where: { username: data.username, deletedAt: null },
-    });
+      // Check if username already exists
+      const existingUsername = await prisma.user.findUnique({
+        where: { username: data.username, deletedAt: null },
+      });
 
-    if (existingUsername) {
-      throw new AppError(409, "User with this username already exists");
-    }
+      if (existingUsername) {
+        throw new AppError(409, "User with this username already exists");
+      }
 
-    // Hash password and create user
-    const hashedPassword = await hashPassword(data.password);
+      // Hash password and create user
+      const hashedPassword = await hashPassword(data.password);
 
-    return prisma.user.create({
-      data: {
-        ...data,
-        password: hashedPassword,
-      },
+      return prisma.user.create({
+        data: {
+          ...data,
+          password: hashedPassword,
+        },
+      });
     });
   }
 

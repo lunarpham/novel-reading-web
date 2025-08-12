@@ -2,6 +2,7 @@ import { UserService } from "../user/_index";
 import { comparePassword } from "../../lib/utils/bcrypt";
 import { TokenService } from "./token";
 import { AppError } from "../../lib/middleware/error";
+import { User } from "@prisma/client";
 
 export interface AuthTokens {
   accessToken: string;
@@ -10,7 +11,7 @@ export interface AuthTokens {
 }
 
 export interface AuthResult {
-  user: any;
+  user: Omit<User, "password">;
   tokens: AuthTokens;
 }
 

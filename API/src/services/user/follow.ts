@@ -32,18 +32,15 @@ export class FollowService {
       throw new AppError(404, "User to follow not found");
     }
 
-    const isAlreadyFollowing = await this.isUserFollowing(
-      followingUserId,
-      followedUserId
-    );
-
-    if (isAlreadyFollowing) {
-      throw new AppError(400, "You are already following this user");
+    try {
+      await prisma.follow.create({ data: { followingUserId, followedUserId } });
+    } catch (error: any) {
+      if (error.code === "P2002") {
+        // Prisma unique constraint violation
+        throw new AppError(400, "You are already following this user");
+      }
+      throw error;
     }
-
-    await prisma.follow.create({
-      data: { followingUserId, followedUserId },
-    });
 
     return {
       followingUserId,
@@ -82,23 +79,16 @@ export class FollowService {
       throw new AppError(404, "User to unfollow not found");
     }
 
-    const isFollowing = await this.isUserFollowing(
-      followingUserId,
-      followedUserId
-    );
-
-    if (!isFollowing) {
-      throw new AppError(400, "You are not following this user");
-    }
-
-    await prisma.follow.delete({
+    const deleted = await prisma.follow.deleteMany({
       where: {
-        followingUserId_followedUserId: {
-          followingUserId,
-          followedUserId,
-        },
+        followingUserId,
+        followedUserId,
       },
     });
+
+    if (deleted.count === 0) {
+      throw new AppError(400, "You are not following this user");
+    }
 
     return {
       followingUserId,
