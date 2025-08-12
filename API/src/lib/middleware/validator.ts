@@ -1,10 +1,11 @@
 import {
   body,
   param,
+  query,
   validationResult,
   ValidationChain,
 } from "express-validator";
-import { Request, Response, NextFunction } from "express";
+import e, { Request, Response, NextFunction } from "express";
 import { Role, User } from "@prisma/client";
 
 export const handleValidationErrors = (
@@ -23,8 +24,24 @@ export const handleValidationErrors = (
   next();
 };
 
+const passwordFormatValidation = (fieldName: string) => {
+  return body(fieldName)
+    .trim()
+    .notEmpty()
+    .customSanitizer((value) => {
+      return value.replace(/\s+/g, "");
+    })
+    .isLength({ min: 8, max: 128 })
+    .withMessage(`${fieldName} must be between 8 and 128 characters`)
+    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/)
+    .withMessage(
+      `${fieldName} must contain at least one lowercase letter, one uppercase letter, one number, and one special character`
+    );
+};
+
 // Reusable validation rules
 export const userValidationRules = {
+  // Validation field in request body
   username: (required = true): ValidationChain => {
     const rule = body("username")
       .trim()
@@ -70,18 +87,16 @@ export const userValidationRules = {
   },
 
   password: (required = true): ValidationChain => {
-    const rule = body("password")
-      .isLength({ min: 8, max: 128 })
-      .withMessage("Password must be between 8 and 128 characters")
-      .matches(
-        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/
-      )
-      .withMessage(
-        "Password must contain at least one lowercase letter, one uppercase letter, one number, and one special character"
-      );
-
+    const rule = passwordFormatValidation("password");
     return required
       ? rule.notEmpty().withMessage("Password is required")
+      : rule.optional();
+  },
+
+  newPassword: (required = true): ValidationChain => {
+    const rule = passwordFormatValidation("newPassword");
+    return required
+      ? rule.notEmpty().withMessage("New password is required")
       : rule.optional();
   },
 
@@ -126,9 +141,8 @@ export const userValidationRules = {
   gender: (): ValidationChain =>
     body("gender")
       .optional()
-      .trim()
-      .isLength({ max: 20 })
-      .withMessage("Gender must not exceed 20 characters"),
+      .isIn(["male", "female", "prefer_not_to_say"])
+      .withMessage("Gender must be one of: male, female, prefer_not_to_say"),
 
   avatarUrl: (): ValidationChain =>
     body("avatarUrl")
@@ -140,11 +154,6 @@ export const userValidationRules = {
     param("id")
       .isInt({ min: 1 })
       .withMessage("User ID must be a positive integer"),
-
-  currentPassword: (): ValidationChain =>
-    body("currentPassword")
-      .notEmpty()
-      .withMessage("Current password is required"),
 
   confirmPassword: (): ValidationChain =>
     body("confirmPassword")
@@ -158,18 +167,60 @@ export const userValidationRules = {
       }),
 };
 
+export const queryPaginationRules = {
+  pagination: () => [
+    query("page")
+      .optional()
+      .isInt({ min: 1 })
+      .withMessage("Page must be a positive integer"),
+    query("limit")
+      .optional()
+      .isInt({ min: 1, max: 100 })
+      .withMessage("Limit must be between 1 and 100"),
+  ],
+};
+
 // Preset validation combinations
 export const validateUserRegistration: ValidationChain[] = [
-  userValidationRules.username(),
   userValidationRules.email(),
+  userValidationRules.username(),
   userValidationRules.displayName(),
   userValidationRules.password(),
+  userValidationRules.bio(),
+  userValidationRules.dateOfBirth(),
+  userValidationRules.gender(),
+  userValidationRules.avatarUrl(),
 ];
 
 export const validateUserLogin: ValidationChain[] = [
   userValidationRules.email(),
   userValidationRules.password(),
 ];
+
+export const validateUserProfileUpdate: ValidationChain[] = [
+  userValidationRules.email(false),
+  userValidationRules.displayName(false),
+  userValidationRules.bio(),
+  userValidationRules.dateOfBirth(false),
+  userValidationRules.gender(),
+  userValidationRules.avatarUrl(),
+];
+
+export const validateUserPasswordChange: ValidationChain[] = [
+  userValidationRules.password(),
+  userValidationRules.newPassword(),
+];
+
+export const validateFollowUserId = {
+  followedUserId: () =>
+    body("followedUserId")
+      .isInt({ min: 1 })
+      .withMessage("Valid followed user ID is required"),
+  followingUserId: () =>
+    body("followingUserId")
+      .isInt({ min: 1 })
+      .withMessage("Valid following user ID is required"),
+};
 
 export const createUserValidation = (
   fields: (keyof typeof userValidationRules)[],
