@@ -19,10 +19,8 @@ app.use(cors());
 
 const swaggerOptions = {
   swaggerOptions: {
-    // Disable caching
     supportedSubmitMethods: ["get", "post", "put", "delete", "patch"],
     showRequestHeaders: true,
-    // Force reload
     url: "/swagger.json?v=" + Date.now(),
   },
 };
@@ -50,7 +48,7 @@ app.get("/health", (req, res) => {
 app.get("/", (req, res) => {
   res.status(200).json({
     success: true,
-    message: "Welcome to Wattpad Clone API",
+    message: "Welcome to Novel API",
     documentation: "/api-docs",
     health: "/health",
   });
