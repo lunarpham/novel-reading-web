@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { AuthService } from "../services/auth/authenticate";
-import { ApiResponse } from "../lib/utils/response";
-import { asyncHandler } from "../lib/middleware/error";
+import { ApiResponse } from "../interfaces/_index";
+import { asyncHandler } from "../middleware/error";
 
 export class AuthController {
   constructor(private authService = new AuthService()) {}

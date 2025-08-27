@@ -1,14 +1,11 @@
 import prisma from "../../config/prismaClient";
 import { User } from "@prisma/client";
-import { hashPassword } from "../../lib/utils/bcrypt";
-import { UserCreateData } from "../../lib/dtos/userDto";
-import { AppError } from "../../lib/middleware/error";
+import { hashPassword } from "../../utils/bcrypt";
+import { UserCreateData } from "../../interfaces/user";
+import { AppError } from "../../middleware/error";
 
 export class UserCreateService {
   async createUser(data: UserCreateData): Promise<User> {
-    // Validate required fields
-    await this.validateUserData(data);
-
     // Prevent race conditions
     return await prisma.$transaction(async (prisma) => {
       // Check if user already exists by email
@@ -39,24 +36,5 @@ export class UserCreateService {
         },
       });
     });
-  }
-
-  async validateUserData(data: UserCreateData): Promise<void> {
-    // Additional validation logic
-    if (!data.email || !data.username || !data.password) {
-      throw new AppError(400, "Required fields are missing");
-    }
-
-    if (data.email.length === 0) {
-      throw new AppError(400, "Email cannot be empty");
-    }
-
-    if (data.username.length === 0) {
-      throw new AppError(400, "Username cannot be empty");
-    }
-
-    if (data.password.length === 0) {
-      throw new AppError(400, "Password cannot be empty");
-    }
   }
 }

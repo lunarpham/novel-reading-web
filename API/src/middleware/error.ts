@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { ApiResponse } from "../utils/response";
+import { ApiResponse } from "../interfaces/_index";
 
 export class AppError extends Error {
   constructor(

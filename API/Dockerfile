@@ -1,26 +1,27 @@
-FROM node:22-alpine
-
-# Set working directory
+FROM node:20-alpine AS builder
 WORKDIR /app
+RUN apk add --no-cache libc6-compat
 
-# Copy package files
 COPY package*.json ./
-COPY tsconfig.json ./
-
-# Install dependencies
-RUN npm ci
-
-# Copy source code
-COPY . .
-
-# Generate Prisma client
+COPY prisma ./prisma
+RUN npm install --no-audit --no-fund
 RUN npx prisma generate
 
-# Run the application
-RUN npm run dev
+COPY tsconfig.json ./
+COPY src ./src
+RUN npm run build  # postbuild copies swagger.json
 
-# Expose port
+FROM node:20-alpine AS runner
+WORKDIR /app
+RUN apk add --no-cache libc6-compat curl
+ENV NODE_ENV=production
+
+COPY package*.json ./
+COPY prisma ./prisma
+RUN npm install --omit=dev --no-audit --no-fund
+
+COPY --from=builder /app/dist ./dist
+
 EXPOSE 8080
-
-# Start the application
-CMD ["npm", "run", "dev"]
+USER node
+CMD ["node", "dist/index.js"]

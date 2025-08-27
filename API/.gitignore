@@ -45,3 +45,7 @@ Thumbs.db
 prisma/migrations/
 ecosystem.config.js
 /src/generated/prisma
+
+# Docker
+Dockerfile
+.dockerignore

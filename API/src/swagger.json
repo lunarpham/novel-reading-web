@@ -15,7 +15,7 @@
   },
   "servers": [
     {
-      "url": "http://localhost:3000",
+      "url": "http://localhost:8080",
       "description": "Development server"
     }
   ],
@@ -409,6 +409,295 @@
                 "type": "array",
                 "items": {
                   "$ref": "#/components/schemas/FollowData"
+                }
+              },
+              "pagination": {
+                "type": "object",
+                "properties": {
+                  "currentPage": {
+                    "type": "integer"
+                  },
+                  "totalPages": {
+                    "type": "integer"
+                  },
+                  "totalItems": {
+                    "type": "integer"
+                  },
+                  "hasNext": {
+                    "type": "boolean"
+                  },
+                  "hasPrev": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "Story": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Story ID"
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "description": "Story title"
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 2000,
+            "description": "Story description"
+          },
+          "authorId": {
+            "type": "integer",
+            "description": "Author user ID"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["draft", "on_going", "completed", "hiatus"],
+            "description": "Story status"
+          },
+          "cover": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true,
+            "description": "Cover image URL"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "action",
+                "adult",
+                "romance",
+                "scifi",
+                "fantasy",
+                "mystery",
+                "teen",
+                "tragedy",
+                "comedy",
+                "horror"
+              ]
+            },
+            "description": "Story tags/genres"
+          },
+          "wordCount": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Total word count"
+          },
+          "publishedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "Publication date"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Creation date"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Last update date"
+          },
+          "author": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "integer"
+              },
+              "username": {
+                "type": "string"
+              },
+              "displayName": {
+                "type": "string"
+              },
+              "avatarUrl": {
+                "type": "string",
+                "nullable": true
+              }
+            }
+          }
+        },
+        "required": ["title", "description", "authorId"]
+      },
+      "StoryCreate": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "description": "Story title"
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 2000,
+            "description": "Story description"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["draft", "on_going", "completed", "hiatus"],
+            "description": "Story status (optional)"
+          },
+          "cover": {
+            "type": "string",
+            "format": "uri",
+            "description": "Cover image URL (optional)"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "action",
+                "adult",
+                "romance",
+                "scifi",
+                "fantasy",
+                "mystery",
+                "teen",
+                "tragedy",
+                "comedy",
+                "horror"
+              ]
+            },
+            "description": "Story tags/genres (optional, maximum 10 tags)"
+          },
+          "publishedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Publication date (optional, cannot be in the future)"
+          }
+        },
+        "required": ["title", "description"]
+      },
+      "Chapter": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Chapter ID"
+          },
+          "storyId": {
+            "type": "integer",
+            "description": "Story ID"
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "description": "Chapter title"
+          },
+          "content": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Chapter content"
+          },
+          "chapterNumber": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Chapter number"
+          },
+          "wordCount": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Word count"
+          },
+          "isPublished": {
+            "type": "boolean",
+            "default": false,
+            "description": "Whether chapter is published"
+          },
+          "publishedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "Publication date"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Creation date"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Last update date"
+          }
+        },
+        "required": ["title", "content", "storyId", "chapterNumber"]
+      },
+      "ReadingList": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Reading list ID"
+          },
+          "userId": {
+            "type": "integer",
+            "description": "User ID who owns the list"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100,
+            "description": "Reading list name"
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 500,
+            "nullable": true,
+            "description": "Reading list description"
+          },
+          "isPublic": {
+            "type": "boolean",
+            "default": false,
+            "description": "Whether reading list is public"
+          },
+          "storyCount": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Number of stories in the list"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Creation date"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Last update date"
+          }
+        },
+        "required": ["name", "userId"]
+      },
+      "StoriesPaginatedResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "data": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Story"
                 }
               },
               "pagination": {
@@ -1466,6 +1755,480 @@
           }
         }
       }
+    },
+    "/api/stories": {
+      "get": {
+        "summary": "Get all stories",
+        "description": "Retrieve published stories with advanced filtering, searching and sorting",
+        "tags": ["Stories"],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            },
+            "description": "Page number"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "default": 10
+            },
+            "description": "Number of stories per page"
+          },
+          {
+            "name": "title",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter by exact title match"
+          },
+          {
+            "name": "keyword",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Search keyword in title and content"
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["draft", "on_going", "completed", "hiatus"]
+            },
+            "description": "Filter by story status"
+          },
+          {
+            "name": "sortBy",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["title", "updatedAt", "createdAt", "publishedAt"],
+              "default": "title"
+            },
+            "description": "Sort field"
+          },
+          {
+            "name": "sortOrder",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["asc", "desc"],
+              "default": "desc"
+            },
+            "description": "Sort order"
+          },
+          {
+            "name": "includeTags",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "action",
+                  "adult",
+                  "romance",
+                  "scifi",
+                  "fantasy",
+                  "mystery",
+                  "teen",
+                  "tragedy",
+                  "comedy",
+                  "horror"
+                ]
+              }
+            },
+            "style": "form",
+            "explode": true,
+            "description": "Tags/genres that stories must include (multiple parameters: includeTags=romance&includeTags=scifi)"
+          },
+          {
+            "name": "excludeTags",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "action",
+                  "adult",
+                  "romance",
+                  "scifi",
+                  "fantasy",
+                  "mystery",
+                  "teen",
+                  "tragedy",
+                  "comedy",
+                  "horror"
+                ]
+              }
+            },
+            "style": "form",
+            "explode": true,
+            "description": "Tags/genres that stories must exclude (multiple parameters: excludeTags=adult&excludeTags=horror)"
+          },
+          {
+            "name": "includeTagLogic",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["and", "or"],
+              "default": "or"
+            },
+            "description": "Logic for include tag filtering (and = all tags must be present, or = any tag must be present)"
+          },
+          {
+            "name": "excludeTagLogic",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["and", "or"],
+              "default": "or"
+            },
+            "description": "Logic for exclude tag filtering (and = exclude if all tags present, or = exclude if any tag present)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Stories retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoriesPaginatedResponse"
+                },
+                "examples": {
+                  "searchExample": {
+                    "summary": "Example search with tags",
+                    "description": "Search for romance and fantasy stories, excluding adult content",
+                    "value": {
+                      "success": true,
+                      "message": "Stories retrieved successfully",
+                      "data": {
+                        "data": [
+                          {
+                            "id": 1,
+                            "title": "The Enchanted Love Story",
+                            "description": "A magical romance in a fantasy world",
+                            "tags": ["romance", "fantasy", "teen"],
+                            "status": "on_going",
+                            "wordCount": 25000,
+                            "author": {
+                              "id": 1,
+                              "username": "author1",
+                              "displayName": "Fantasy Writer",
+                              "avatarUrl": null
+                            }
+                          }
+                        ],
+                        "pagination": {
+                          "currentPage": 1,
+                          "totalPages": 5,
+                          "totalItems": 42,
+                          "hasNext": true,
+                          "hasPrev": false
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Create new story",
+        "description": "Create a new story",
+        "tags": ["Stories"],
+        "security": [{ "BearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StoryCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Story created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/stories/{id}": {
+      "get": {
+        "summary": "Get story by ID",
+        "description": "Retrieve a specific story by its ID",
+        "tags": ["Stories"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "description": "Story ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Story retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ApiResponse"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/Story"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Story not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "summary": "Update story",
+        "description": "Update a story (only by author)",
+        "tags": ["Stories"],
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "description": "Story ID"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StoryCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Story updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - not the author",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Story not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete story",
+        "description": "Delete a story (only by the author)",
+        "tags": ["Stories"],
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "description": "Story ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Story deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - not the author",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Story not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "tags": [
@@ -1476,6 +2239,14 @@
     {
       "name": "Users",
       "description": "User management endpoints"
+    },
+    {
+      "name": "Stories",
+      "description": "Story management and search endpoints"
+    },
+    {
+      "name": "Reading Lists",
+      "description": "Reading list management endpoints"
     },
     {
       "name": "Health",

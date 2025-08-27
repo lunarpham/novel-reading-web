@@ -1,7 +1,7 @@
 import { UserService } from "../user/_index";
-import { comparePassword } from "../../lib/utils/bcrypt";
+import { comparePassword } from "../../utils/bcrypt";
 import { TokenService } from "./token";
-import { AppError } from "../../lib/middleware/error";
+import { AppError } from "../../middleware/error";
 import { User } from "@prisma/client";
 
 export interface AuthTokens {
