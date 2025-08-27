@@ -60,6 +60,10 @@ export class StoryController {
       const storyId = Number(req.params.id);
       const story = await this.storyService.getStoryById(storyId);
 
+      if (!story) {
+        throw new AppError(404, "Story not found");
+      }
+
       const response: ApiResponse = {
         success: true,
         message: "Story retrieved successfully",
