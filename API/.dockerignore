@@ -1,0 +1,47 @@
+# Dependencies
+node_modules
+*.log
+
+# Build output
+dist/
+build/
+*.tsbuildinfo
+
+# Environment variables (except .env for Docker)
+.env
+.env.local
+.env.*.local
+
+# Cache directories
+.npm
+.eslintcache
+.cache
+.parcel-cache
+.rpt2_cache*/
+
+# Temporary folders
+tmp/
+temp/
+
+# Editor and OS files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store*
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Docker files
+Dockerfile*
+docker-compose*
+.dockerignore
+
+# Git and documentation
+.git
+.gitignore
+README.md

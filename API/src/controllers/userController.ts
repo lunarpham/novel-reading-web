@@ -1,9 +1,8 @@
 // filepath: e:\Documents\NAPA\novel-reading-web\API\src\controllers\user.controller.ts
 import { Request, Response } from "express";
 import { UserService } from "../services/user/_index";
-import { ApiResponse } from "../lib/utils/response";
-import { PaginationParams } from "../lib/dtos/userDto";
-import { asyncHandler } from "../lib/middleware/error";
+import { ApiResponse, PaginationParams } from "../interfaces/_index";
+import { asyncHandler } from "../middleware/error";
 
 export class UserController {
   constructor(private userService = new UserService()) {}

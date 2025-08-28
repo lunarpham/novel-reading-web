@@ -1,13 +1,9 @@
 import prisma from "../../config/prismaClient";
 import { User } from "@prisma/client";
-import {
-  UserUpdateData,
-  UserPublicProfile,
-  PaginatedResponse,
-  PaginationParams,
-} from "../../lib/dtos/userDto";
-import { AppError } from "../../lib/middleware/error";
-import { filterAllowedFields } from "../../lib/utils/filter";
+import { UserUpdateData, UserPublicProfile } from "../../interfaces/user";
+import { PaginationParams, PaginatedResponse } from "../../interfaces/_index";
+import { AppError } from "../../middleware/error";
+import { filterAllowedFields } from "../../utils/filter";
 
 export class UserProfileService {
   async getUserById(id: number): Promise<User | null> {

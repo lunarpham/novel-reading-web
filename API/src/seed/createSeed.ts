@@ -12,7 +12,18 @@ import * as bcrypt from "bcrypt";
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log("🌱 Starting seed...");
+  console.log("Starting seed...");
+
+  console.log("Cleaning up existing data...");
+  await prisma.notification.deleteMany({});
+  await prisma.vote.deleteMany({});
+  await prisma.userLibrary.deleteMany({});
+  await prisma.comment.deleteMany({});
+  await prisma.chapter.deleteMany({});
+  await prisma.story.deleteMany({});
+  await prisma.follow.deleteMany({});
+  await prisma.user.deleteMany({});
+  console.log("Database cleaned");
 
   // Create users with hashed passwords
   const users = await Promise.all([
@@ -83,7 +94,7 @@ async function main() {
     }),
   ]);
 
-  console.log("👥 Created users");
+  console.log("Created users");
 
   // Create follows (user relationships)
   await prisma.follow.createMany({
@@ -99,7 +110,7 @@ async function main() {
     ],
   });
 
-  console.log("🤝 Created follows");
+  console.log("Created follows");
 
   // Create stories for each user
   const stories = [];
@@ -228,7 +239,7 @@ async function main() {
 
   stories.push(davidStory1, davidStory2);
 
-  console.log("📚 Created stories");
+  console.log("Created stories");
 
   // Create chapters for each story
   const allChapters = [];
@@ -250,7 +261,7 @@ async function main() {
     }
   }
 
-  console.log("📖 Created chapters");
+  console.log("Created chapters");
 
   // Create comments
   const comments = [];
@@ -271,7 +282,7 @@ async function main() {
     }
   }
 
-  console.log("💬 Created comments");
+  console.log("Created comments");
 
   // Create user libraries (reading lists) with updated reading status
   for (const user of users) {
@@ -323,7 +334,7 @@ async function main() {
     }
   }
 
-  console.log("📚 Created user libraries");
+  console.log("Created user libraries");
 
   // Create votes
   for (const user of users) {
@@ -345,7 +356,7 @@ async function main() {
     }
   }
 
-  console.log("⭐ Created votes");
+  console.log("Created votes");
 
   // Create notifications
   for (const user of users) {
@@ -383,9 +394,9 @@ async function main() {
     }
   }
 
-  console.log("🔔 Created notifications");
+  console.log("Created notifications");
 
-  console.log("✅ Seed completed successfully!");
+  console.log("Seed completed successfully!");
 }
 
 // ...existing helper functions remain the same...

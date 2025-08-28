@@ -1,4 +1,5 @@
 import { User, Role, Gender } from "@prisma/client";
+import { PaginationParams, PaginatedResponse, UserReference } from "./_index";
 
 export interface UserCreateData {
   email: string;
@@ -23,35 +24,12 @@ export interface UserUpdateData {
 
 export interface UserPublicProfile extends Omit<User, "password"> {}
 
-export interface PaginationParams {
-  page: number;
-  limit: number;
-}
-
-export interface PaginatedResponse<T> {
-  data: T[];
-  pagination: {
-    currentPage: number;
-    totalPages: number;
-    totalItems: number;
-    hasNext: boolean;
-    hasPrev: boolean;
-  };
-}
-
-// Add the missing FollowData interface
 export interface FollowData {
   followingUserId: number;
   followedUserId: number;
-  followedUser: {
-    id: number;
-    username: string;
-    displayName: string | null;
-    avatarUrl: string | null;
-  };
+  followedUser: UserReference;
 }
 
-// You might also want to add these for completeness
 export interface FollowUser {
   followedUserId: number;
 }

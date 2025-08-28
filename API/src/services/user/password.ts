@@ -1,7 +1,7 @@
 import prisma from "../../config/prismaClient";
 import { User } from "@prisma/client";
-import { hashPassword, comparePassword } from "../../lib/utils/bcrypt";
-import { AppError } from "../../lib/middleware/error";
+import { hashPassword, comparePassword } from "../../utils/bcrypt";
+import { AppError } from "../../middleware/error";
 
 export class PasswordService {
   async updatePassword(

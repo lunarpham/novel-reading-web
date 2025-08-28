@@ -1,13 +1,15 @@
 import express from "express";
 import dotenv from "dotenv";
-import { Constants } from "./lib/constants/index";
+import { Constants } from "./config/constants";
 import authRoutes from "./routes/authRoute";
 import userRoutes from "./routes/userRoute";
+import storyRoutes from "./routes/storyRoute";
 import swaggerUi from "swagger-ui-express";
 import swaggerDocument from "./swagger.json";
 import cors from "cors";
-import { errorHandler } from "./lib/middleware/error";
+import { errorHandler } from "./middleware/error";
 import "./types";
+import { Request, Response } from "express";
 dotenv.config();
 
 const app = express();
@@ -19,15 +21,19 @@ app.use(cors());
 
 const swaggerOptions = {
   swaggerOptions: {
-    // Disable caching
     supportedSubmitMethods: ["get", "post", "put", "delete", "patch"],
     showRequestHeaders: true,
-    // Force reload
     url: "/swagger.json?v=" + Date.now(),
   },
 };
 
 app.use(express.json());
+
+app.get("/swagger.json", (_req: Request, res: Response) => {
+  res.setHeader("Content-Type", "application/json");
+  res.send(swaggerDocument);
+});
+
 app.use(
   "/api-docs",
   swaggerUi.serve,
@@ -35,9 +41,10 @@ app.use(
 );
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api/stories", storyRoutes);
 app.use(errorHandler);
 
-app.get("/health", (req, res) => {
+app.get("/health", (req: Request, res: Response) => {
   res.status(200).json({
     success: true,
     message: "Server is healthy",
@@ -47,10 +54,10 @@ app.get("/health", (req, res) => {
 });
 
 // Root endpoint
-app.get("/", (req, res) => {
+app.get("/", (req: Request, res: Response) => {
   res.status(200).json({
     success: true,
-    message: "Welcome to Wattpad Clone API",
+    message: "Welcome to Novel API",
     documentation: "/api-docs",
     health: "/health",
   });

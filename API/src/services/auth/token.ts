@@ -1,7 +1,7 @@
 import jwt, { Secret, SignOptions } from "jsonwebtoken";
-import { Constants } from "../../lib/constants/index";
-import { JwtPayload, TokenResponse, TokenUser } from "../../lib/dtos/authDto";
-import { AppError } from "../../lib/middleware/error";
+import { Constants } from "../../config/constants";
+import { JwtPayload, TokenResponse, TokenUser } from "../../interfaces/auth";
+import { AppError } from "../../middleware/error";
 
 export class TokenService {
   generateAccessToken(user: TokenUser): string {

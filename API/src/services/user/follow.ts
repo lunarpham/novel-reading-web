@@ -1,10 +1,7 @@
 import prisma from "../../config/prismaClient";
-import {
-  FollowData,
-  PaginatedResponse,
-  PaginationParams,
-} from "../../lib/dtos/userDto";
-import { AppError } from "../../lib/middleware/error";
+import { FollowData } from "../../interfaces/user";
+import { PaginationParams, PaginatedResponse } from "../../interfaces/_index";
+import { AppError } from "../../middleware/error";
 
 export class FollowService {
   async followUser(

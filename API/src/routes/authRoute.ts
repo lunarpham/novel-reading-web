@@ -3,8 +3,8 @@ import { AuthController } from "../controllers/authController";
 import {
   validateUserRegistration,
   validateUserLogin,
-  handleValidationErrors,
-} from "../lib/middleware/validator";
+} from "../validators/user";
+import { handleValidationErrors } from "../validators/_index";
 
 const router = Router();
 const authController = new AuthController();

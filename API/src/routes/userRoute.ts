@@ -1,25 +1,27 @@
 import { Router, Request, Response } from "express";
 import { UserController } from "../controllers/userController";
 import {
-  userValidationRules,
   validateUserProfileUpdate,
-  handleValidationErrors,
   validateFollowUserId,
   validateUserPasswordChange,
-  queryPaginationRules,
-} from "../lib/middleware/validator";
+} from "../validators/user";
+import {
+  handleValidationErrors,
+  validatePaginationQuery,
+  validateParamId,
+} from "../validators/_index";
 import {
   authenticate,
   requireAdmin,
   requireSelfOnly,
-} from "../lib/middleware/auth";
+} from "../middleware/auth";
 
 const router = Router();
 const userController = new UserController();
 
 router.get(
   "/",
-  queryPaginationRules.pagination(),
+  validatePaginationQuery,
   handleValidationErrors,
   userController.getAllUsers
 );
@@ -27,7 +29,7 @@ router.get(
 // Get user profile (public)
 router.get(
   "/:id",
-  userValidationRules.userId(),
+  validateParamId,
   handleValidationErrors,
   userController.getUserProfile
 );
@@ -37,7 +39,7 @@ router.put(
   "/:id",
   authenticate,
   requireSelfOnly(),
-  userValidationRules.userId(),
+  validateParamId,
   validateUserProfileUpdate,
   handleValidationErrors,
   userController.updateUserProfile
@@ -48,7 +50,7 @@ router.put(
   "/:id/password",
   authenticate,
   requireSelfOnly(),
-  userValidationRules.userId(),
+  validateParamId,
   validateUserPasswordChange,
   handleValidationErrors,
   userController.updateUserPassword
@@ -59,7 +61,7 @@ router.delete(
   "/:id",
   authenticate,
   requireAdmin,
-  userValidationRules.userId(),
+  validateParamId,
   handleValidationErrors,
   userController.deleteUser
 );
@@ -69,7 +71,7 @@ router.post(
   "/:id/following",
   authenticate,
   requireSelfOnly(),
-  userValidationRules.userId(),
+  validateParamId,
   validateFollowUserId.followedUserId(),
   handleValidationErrors,
   userController.followUser
@@ -80,7 +82,7 @@ router.delete(
   "/:id/following",
   authenticate,
   requireSelfOnly(),
-  userValidationRules.userId(),
+  validateParamId,
   validateFollowUserId.followedUserId(),
   handleValidationErrors,
   userController.unfollowUser
@@ -88,16 +90,16 @@ router.delete(
 
 router.get(
   "/:id/following",
-  userValidationRules.userId(),
-  queryPaginationRules.pagination(),
+  validateParamId,
+  validatePaginationQuery,
   handleValidationErrors,
   userController.getFollowingUsers
 );
 
 router.get(
   "/:id/followers",
-  userValidationRules.userId(),
-  queryPaginationRules.pagination(),
+  validateParamId,
+  validatePaginationQuery,
   handleValidationErrors,
   userController.getFollowers
 );

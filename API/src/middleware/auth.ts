@@ -1,10 +1,10 @@
 import { Request, Response, NextFunction } from "express";
-import { tokenService } from "../../services/auth/token";
-import { JwtPayload } from "../../lib/dtos/authDto";
-import { UserService } from "../../services/user/_index";
+import { tokenService } from "../services/auth/token";
+import { JwtPayload } from "../interfaces/auth";
+import { UserService } from "../services/user/_index";
 import { Role } from "@prisma/client";
 import { AppError } from "./error";
-import "../../types";
+import "../types";
 
 const userService = new UserService();
 
