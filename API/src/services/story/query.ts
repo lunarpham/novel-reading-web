@@ -137,15 +137,11 @@ export class StoryQueryService {
           },
         });
       } else {
-        // Any exclude tag must be absent (OR logic for exclusion)
-        excludeTags.forEach((tag) => {
-          tagConditions.push({
-            tags: {
-              NOT: {
-                has: tag,
-              },
-            },
-          });
+        // Any exclude tag being present should exclude the story (OR)
+        tagConditions.push({
+          OR: excludeTags.map((tag) => ({
+            NOT: { tags: { has: tag } },
+          })),
         });
       }
     }
@@ -168,8 +164,10 @@ export class StoryQueryService {
         return { createdAt: order };
       case "updatedAt":
         return { updatedAt: order };
+      case "publishedAt":
+        return { publishedAt: order };
       default:
-        return { title: "asc" as const };
+        return { title: order };
     }
   }
 }

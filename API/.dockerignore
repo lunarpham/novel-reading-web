@@ -8,6 +8,7 @@ build/
 *.tsbuildinfo
 
 # Environment variables (except .env for Docker)
+.env
 .env.local
 .env.*.local
 

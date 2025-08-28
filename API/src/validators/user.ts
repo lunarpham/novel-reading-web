@@ -99,7 +99,14 @@ export const userValidationRules = {
         if (value) {
           const date = new Date(value);
           const now = new Date();
-          const age = now.getFullYear() - date.getFullYear();
+          let age = now.getFullYear() - date.getFullYear();
+          const monthDiff = now.getMonth() - date.getMonth();
+          if (
+            monthDiff < 0 ||
+            (monthDiff === 0 && now.getDate() < date.getDate())
+          ) {
+            age--;
+          }
           if (age < 13 || age > 120) {
             throw new Error("Age must be between 13 and 120 years");
           }

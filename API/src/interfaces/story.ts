@@ -5,7 +5,6 @@ import {
   UserReference,
   CountStats,
 } from "./_index";
-import e from "express";
 
 export interface StorySearchParams extends PaginationParams {
   title?: string;
@@ -14,8 +13,6 @@ export interface StorySearchParams extends PaginationParams {
   sortBy?: "publishedAt" | "title" | "updatedAt";
   sortOrder?: "asc" | "desc";
   keyword?: string;
-  tagMode?: "include" | "exclude";
-  tagLogic?: "and" | "or";
   includeTags?: string[];
   excludeTags?: string[];
   includeTagLogic?: "and" | "or";

@@ -39,6 +39,7 @@ router.post(
 router.put(
   "/:id",
   authenticate,
+  validateParamId,
   validateStory,
   handleValidationErrors,
   storyController.updateStory

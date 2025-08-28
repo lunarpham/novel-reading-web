@@ -5,14 +5,7 @@ import { createStrictValidationChain } from "./_index";
 // Type-safe field names for Story model
 type StoryField = keyof Pick<
   Story,
-  | "title"
-  | "description"
-  | "status"
-  | "cover"
-  | "tags"
-  | "wordCount"
-  | "publishedAt"
-  | "authorId"
+  "title" | "description" | "status" | "cover" | "tags" | "publishedAt"
 >;
 
 const validateChain = (rule: ValidationChain): ValidationChain => {
@@ -38,6 +31,8 @@ export const storyValidationRules = {
 
   description: validateChain(
     body("description" satisfies StoryField)
+      .notEmpty()
+      .withMessage("Description is required")
       .customSanitizer((value) => value.replace(/\s+/g, " ").trim())
       .isLength({ max: 2000 })
       .withMessage("Description cannot exceed 2000 characters")
@@ -219,38 +214,10 @@ export const storySearchValidator = [
 ];
 
 export const storyCreateValidator = [
-  body("title")
-    .notEmpty()
-    .withMessage("Title is required")
-    .isLength({ min: 1, max: 200 })
-    .withMessage("Title must be between 1 and 200 characters"),
-
-  body("description")
-    .notEmpty()
-    .withMessage("Description is required")
-    .isLength({ max: 2000 })
-    .withMessage("Description must not exceed 2000 characters"),
-
-  body("cover").optional().isURL().withMessage("Cover must be a valid URL"),
-
-  body("tags")
-    .optional()
-    .isArray()
-    .withMessage("Tags must be an array")
-    .custom((tags) => {
-      if (Array.isArray(tags)) {
-        const validTags = Object.values(Tag);
-        const invalidTags = tags.filter((tag) => !validTags.includes(tag));
-        if (invalidTags.length > 0) {
-          throw new Error(
-            `Invalid tags: ${invalidTags.join(
-              ", "
-            )}. Valid tags are: ${validTags.join(", ")}`
-          );
-        }
-      }
-      return true;
-    }),
+  storyValidationRules.title,
+  storyValidationRules.description,
+  storyValidationRules.cover,
+  storyValidationRules.tags,
 ];
 
 export const storyIdValidator = [

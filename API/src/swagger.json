@@ -459,7 +459,7 @@
           },
           "status": {
             "type": "string",
-            "enum": ["draft", "on_going", "completed", "hiatus"],
+            "enum": ["on_going", "completed", "hiatus"],
             "description": "Story status"
           },
           "cover": {
@@ -545,7 +545,7 @@
           },
           "status": {
             "type": "string",
-            "enum": ["draft", "on_going", "completed", "hiatus"],
+            "enum": ["on_going", "completed", "hiatus"],
             "description": "Story status (optional)"
           },
           "cover": {
@@ -1809,7 +1809,7 @@
             "required": false,
             "schema": {
               "type": "string",
-              "enum": ["draft", "on_going", "completed", "hiatus"]
+              "enum": ["on_going", "completed", "hiatus"]
             },
             "description": "Filter by story status"
           },
