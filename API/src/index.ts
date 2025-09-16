@@ -4,6 +4,7 @@ import { Constants } from "./config/constants";
 import authRoutes from "./routes/authRoute";
 import userRoutes from "./routes/userRoute";
 import storyRoutes from "./routes/storyRoute";
+import chapterRoutes from "./routes/chapterRoute";
 import swaggerUi from "swagger-ui-express";
 import swaggerDocument from "./swagger.json";
 import cors from "cors";
@@ -42,6 +43,7 @@ app.use(
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/stories", storyRoutes);
+app.use("/api/chapters", chapterRoutes);
 app.use(errorHandler);
 
 app.get("/health", (req: Request, res: Response) => {

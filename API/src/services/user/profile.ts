@@ -1,12 +1,16 @@
 import prisma from "../../config/prismaClient";
 import { User } from "@prisma/client";
-import { UserUpdateData, UserPublicProfile } from "../../interfaces/user";
+import {
+  UserUpdateData,
+  UserPublicProfile,
+  UserWithoutPassword,
+} from "../../interfaces/user";
 import { PaginationParams, PaginatedResponse } from "../../interfaces/_index";
 import { AppError } from "../../middleware/error";
 import { filterAllowedFields } from "../../utils/filter";
 
 export class UserProfileService {
-  async getUserById(id: number): Promise<User | null> {
+  async getUserById(id: number): Promise<UserPublicProfile | null> {
     const user = await prisma.user.findUnique({
       where: { id, deletedAt: null },
     });
@@ -14,6 +18,36 @@ export class UserProfileService {
     if (!user) {
       throw new AppError(404, "User not found");
     }
+
+    const {
+      password,
+      deletedAt,
+      isRestricted,
+      updatedAt,
+      email,
+      dateOfBirth,
+      ...userWithoutSensitiveData
+    } = user;
+    return userWithoutSensitiveData;
+  }
+
+  async getCurrentUserProfile(id: number): Promise<UserWithoutPassword> {
+    const user = await prisma.user.findUnique({
+      where: { id, deletedAt: null },
+    });
+
+    if (!user) {
+      throw new AppError(404, "User not found");
+    }
+
+    const { password, ...userWithoutPassword } = user;
+    return userWithoutPassword;
+  }
+
+  async getUserByIdForAuth(id: number): Promise<User | null> {
+    const user = await prisma.user.findUnique({
+      where: { id, deletedAt: null },
+    });
 
     return user;
   }
@@ -95,14 +129,10 @@ export class UserProfileService {
         orderBy: { id: "asc" },
         select: {
           id: true,
-          email: true,
           username: true,
           displayName: true,
-          bio: true,
           avatarUrl: true,
           role: true,
-          createdAt: true,
-          updatedAt: true,
         },
       }),
       prisma.user.count({

@@ -7,6 +7,189 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model User {
+  id                   Int            @id @default(autoincrement())
+  email                String         @unique
+  username             String         @unique
+  displayName          String
+  password             String
+  role                 Role           @default(user)
+  bio                  String?
+  dateOfBirth          DateTime?
+  avatarUrl            String?
+  gender               Gender?
+  isRestricted         Boolean        @default(false) @map("is_restricted")
+  createdAt            DateTime       @default(now()) @map("created_at")
+  updatedAt            DateTime       @default(now()) @updatedAt @map("updated_at")
+  deletedAt            DateTime?      @map("deleted_at")
+  chapters             Chapter[]      @relation("ChapterAuthor")
+  comments             Comment[]
+  followers            Follow[]       @relation("FollowedUser")
+  following            Follow[]       @relation("FollowingUser")
+  relatedNotifications Notification[] @relation("RelatedUser")
+  notifications        Notification[] @relation("NotificationUser")
+  reportedBy           Report[]       @relation("ReportedUser")
+  reports              Report[]       @relation("Reporter")
+  reviewedReports      Report[]       @relation("ReviewedBy")
+  stories              Story[]        @relation("StoryAuthor")
+  libraries            UserLibrary[]
+  votes                Vote[]
+
+  @@map("users")
+}
+
+model Follow {
+  followingUserId Int      @map("following_user_id")
+  followedUserId  Int      @map("followed_user_id")
+  createdAt       DateTime @default(now()) @map("created_at")
+  followedUser    User     @relation("FollowedUser", fields: [followedUserId], references: [id], onDelete: Cascade)
+  followingUser   User     @relation("FollowingUser", fields: [followingUserId], references: [id], onDelete: Cascade)
+
+  @@id([followingUserId, followedUserId])
+  @@index([followingUserId])
+  @@index([followedUserId])
+  @@map("follows")
+}
+
+model Story {
+  id            Int            @id @default(autoincrement())
+  title         String
+  description   String?
+  authorId      Int
+  status        Status         @default(on_going)
+  cover         String?
+  tags          Tag[]
+  wordCount     Int            @default(0) @map("word_count")
+  publishedAt   DateTime?      @map("published_at")
+  createdAt     DateTime       @default(now()) @map("created_at")
+  updatedAt     DateTime       @default(now()) @updatedAt @map("updated_at")
+  deletedAt     DateTime?      @map("deleted_at")
+  chapters      Chapter[]
+  comments      Comment[]
+  notifications Notification[]
+  reports       Report[]
+  author        User           @relation("StoryAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  libraries     UserLibrary[]
+  votes         Vote[]
+
+  @@index([authorId])
+  @@index([status])
+  @@index([publishedAt])
+  @@map("stories")
+}
+
+model Chapter {
+  id        Int       @id @default(autoincrement())
+  sortIndex Float     @map("sort_index")
+  title     String?
+  content   String
+  storyId   Int       @map("story_id")
+  authorId  Int
+  wordCount Int       @default(0) @map("word_count")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @default(now()) @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+  author    User      @relation("ChapterAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  story     Story     @relation(fields: [storyId], references: [id], onDelete: Cascade)
+
+  @@unique([storyId, sortIndex])
+  @@index([storyId])
+  @@map("chapters")
+}
+
+model Comment {
+  id        Int       @id @default(autoincrement())
+  content   String
+  userId    Int       @map("user_id")
+  storyId   Int       @map("story_id")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @default(now()) @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+  story     Story     @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reports   Report[]
+
+  @@index([storyId])
+  @@index([userId])
+  @@map("comments")
+}
+
+model UserLibrary {
+  id               Int           @id @default(autoincrement())
+  userId           Int           @map("user_id")
+  storyId          Int           @map("story_id")
+  readingStatus    ReadingStatus @default(plan_to_read) @map("reading_status")
+  currentChapterId Int?          @map("current_chapter_id")
+  lastReadAt       DateTime?     @map("last_read_at")
+  addedAt          DateTime      @default(now()) @map("added_at")
+  updatedAt        DateTime      @default(now()) @updatedAt @map("updated_at")
+  story            Story         @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  user             User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, storyId])
+  @@index([userId])
+  @@index([readingStatus])
+  @@index([lastReadAt])
+  @@map("user_libraries")
+}
+
+model Vote {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  storyId   Int      @map("story_id")
+  score     Int
+  createdAt DateTime @default(now()) @map("created_at")
+  story     Story    @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, storyId])
+  @@index([storyId])
+  @@map("votes")
+}
+
+model Notification {
+  id             Int              @id @default(autoincrement())
+  userId         Int              @map("user_id")
+  type           NotificationType
+  title          String
+  message        String?
+  relatedStoryId Int?             @map("related_story_id")
+  relatedUserId  Int?             @map("related_user_id")
+  isRead         Boolean          @default(false) @map("is_read")
+  createdAt      DateTime         @default(now()) @map("created_at")
+  relatedStory   Story?           @relation(fields: [relatedStoryId], references: [id])
+  relatedUser    User?            @relation("RelatedUser", fields: [relatedUserId], references: [id])
+  user           User             @relation("NotificationUser", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("notifications")
+}
+
+model Report {
+  id             Int          @id @default(autoincrement())
+  reporterId     Int          @map("reporter_id")
+  reportedUserId Int          @map("reported_user_id")
+  storyId        Int?         @map("story_id")
+  commentId      Int?         @map("comment_id")
+  reason         String?
+  status         ReportStatus @default(pending)
+  reviewedById   Int?         @map("reviewed_by_id")
+  reviewedAt     DateTime?    @map("reviewed_at")
+  createdAt      DateTime     @default(now()) @map("created_at")
+  comment        Comment?     @relation(fields: [commentId], references: [id])
+  reportedUser   User         @relation("ReportedUser", fields: [reportedUserId], references: [id], onDelete: Cascade)
+  reporter       User         @relation("Reporter", fields: [reporterId], references: [id], onDelete: Cascade)
+  reviewedBy     User?        @relation("ReviewedBy", fields: [reviewedById], references: [id])
+  story          Story?       @relation(fields: [storyId], references: [id])
+
+  @@index([reporterId])
+  @@index([reportedUserId])
+  @@index([storyId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("reports")
+}
+
 enum Role {
   user
   admin
@@ -57,198 +240,4 @@ enum ReadingStatus {
   on_hold
   dropped
   re_reading
-}
-
-// Models
-
-model User {
-  id           Int       @id @default(autoincrement())
-  email        String    @unique
-  username     String    @unique
-  displayName  String
-  password     String
-  role         Role      @default(user)
-  bio          String?
-  dateOfBirth  DateTime?
-  avatarUrl    String?
-  gender       Gender?
-  isRestricted Boolean   @default(false) @map("is_restricted")
-  createdAt    DateTime  @default(now()) @map("created_at")
-  updatedAt    DateTime  @default(now()) @updatedAt @map("updated_at")
-  deletedAt    DateTime? @map("deleted_at")
-
-  following            Follow[]       @relation("FollowingUser")
-  followers            Follow[]       @relation("FollowedUser")
-  stories              Story[]        @relation("StoryAuthor")
-  chapters             Chapter[]      @relation("ChapterAuthor")
-  comments             Comment[]
-  libraries            UserLibrary[]
-  votes                Vote[]
-  notifications        Notification[] @relation("NotificationUser")
-  relatedNotifications Notification[] @relation("RelatedUser")
-  reports              Report[]       @relation("Reporter")
-  reportedBy           Report[]       @relation("ReportedUser")
-  reviewedReports      Report[]       @relation("ReviewedBy")
-
-  @@map("users")
-}
-
-model Follow {
-  followingUserId Int      @map("following_user_id")
-  followedUserId  Int      @map("followed_user_id")
-  createdAt       DateTime @default(now()) @map("created_at")
-
-  followingUser User @relation("FollowingUser", fields: [followingUserId], references: [id], onDelete: Cascade)
-  followedUser  User @relation("FollowedUser", fields: [followedUserId], references: [id], onDelete: Cascade)
-
-  @@id([followingUserId, followedUserId])
-  @@index([followingUserId])
-  @@index([followedUserId])
-  @@map("follows")
-}
-
-model Story {
-  id          Int       @id @default(autoincrement())
-  title       String
-  description String?
-  authorId    Int
-  status      Status    @default(on_going)
-  cover       String?
-  tags        Tag[]
-  wordCount   Int       @default(0) @map("word_count")
-  publishedAt DateTime? @map("published_at")
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @default(now()) @updatedAt @map("updated_at")
-  deletedAt   DateTime? @map("deleted_at")
-
-  author        User           @relation("StoryAuthor", fields: [authorId], references: [id], onDelete: Cascade)
-  chapters      Chapter[]
-  comments      Comment[]
-  libraries     UserLibrary[]
-  votes         Vote[]
-  notifications Notification[]
-  reports       Report[]
-
-  @@index([authorId])
-  @@index([status])
-  @@index([publishedAt])
-  @@map("stories")
-}
-
-model Chapter {
-  id        Int       @id @default(autoincrement())
-  sortIndex Int       @map("sort_index")
-  title     String?
-  content   String
-  storyId   Int       @map("story_id")
-  authorId  Int
-  wordCount Int       @default(0) @map("word_count")
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime  @default(now()) @updatedAt @map("updated_at")
-  deletedAt DateTime? @map("deleted_at")
-
-  story  Story @relation(fields: [storyId], references: [id], onDelete: Cascade)
-  author User  @relation("ChapterAuthor", fields: [authorId], references: [id], onDelete: Cascade)
-
-  @@unique([storyId, sortIndex])
-  @@index([storyId])
-  @@map("chapters")
-}
-
-model Comment {
-  id        Int       @id @default(autoincrement())
-  content   String
-  userId    Int       @map("user_id")
-  storyId   Int       @map("story_id")
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime  @default(now()) @updatedAt @map("updated_at")
-  deletedAt DateTime? @map("deleted_at")
-
-  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  story   Story    @relation(fields: [storyId], references: [id], onDelete: Cascade)
-  reports Report[]
-
-  @@index([storyId])
-  @@index([userId])
-  @@map("comments")
-}
-
-model UserLibrary {
-  id      Int      @id @default(autoincrement())
-  userId  Int      @map("user_id")
-  storyId Int      @map("story_id")
-  readingStatus ReadingStatus @default(plan_to_read) @map("reading_status")
-  currentChapterId Int? @map("current_chapter_id")
-  lastReadAt DateTime? @map("last_read_at")
-  addedAt DateTime @default(now()) @map("added_at")
-  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
-
-  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
-  story Story @relation(fields: [storyId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, storyId])
-  @@index([userId])
-  @@index([readingStatus])
-  @@index([lastReadAt])
-  @@map("user_libraries")
-}
-
-model Vote {
-  id        Int      @id @default(autoincrement())
-  userId    Int      @map("user_id")
-  storyId   Int      @map("story_id")
-  score     Int
-  createdAt DateTime @default(now()) @map("created_at")
-
-  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
-  story Story @relation(fields: [storyId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, storyId])
-  @@index([storyId])
-  @@map("votes")
-}
-
-model Notification {
-  id             Int              @id @default(autoincrement())
-  userId         Int              @map("user_id")
-  type           NotificationType
-  title          String
-  message        String?
-  relatedStoryId Int?             @map("related_story_id")
-  relatedUserId  Int?             @map("related_user_id")
-  isRead         Boolean          @default(false) @map("is_read")
-  createdAt      DateTime         @default(now()) @map("created_at")
-
-  user         User   @relation("NotificationUser", fields: [userId], references: [id], onDelete: Cascade)
-  relatedStory Story? @relation(fields: [relatedStoryId], references: [id], onDelete: SetNull)
-  relatedUser  User?  @relation("RelatedUser", fields: [relatedUserId], references: [id], onDelete: SetNull)
-
-  @@index([userId])
-  @@map("notifications")
-}
-
-model Report {
-  id             Int          @id @default(autoincrement())
-  reporterId     Int          @map("reporter_id")
-  reportedUserId Int          @map("reported_user_id")
-  storyId        Int?         @map("story_id")
-  commentId      Int?         @map("comment_id")
-  reason         String?
-  status         ReportStatus @default(pending)
-  reviewedById   Int?         @map("reviewed_by_id")
-  reviewedAt     DateTime?    @map("reviewed_at")
-  createdAt      DateTime     @default(now()) @map("created_at")
-
-  reporter     User     @relation("Reporter", fields: [reporterId], references: [id], onDelete: Cascade)
-  reportedUser User?    @relation("ReportedUser", fields: [reportedUserId], references: [id], onDelete: Cascade)
-  story        Story?   @relation(fields: [storyId], references: [id], onDelete: SetNull)
-  comment      Comment? @relation(fields: [commentId], references: [id], onDelete: SetNull)
-  reviewedBy   User?    @relation("ReviewedBy", fields: [reviewedById], references: [id], onDelete: SetNull)
-
-  @@index([reporterId])
-  @@index([reportedUserId])
-  @@index([storyId])
-  @@index([status])
-  @@index([createdAt])
-  @@map("reports")
 }

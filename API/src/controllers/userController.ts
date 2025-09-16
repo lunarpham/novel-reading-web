@@ -43,9 +43,28 @@ export class UserController {
     }
   );
 
+  getCurrentUser = asyncHandler(
+    async (req: Request, res: Response): Promise<void> => {
+      // Get the user ID from the authenticated user in the request
+      const userId = req.user!.userId;
+
+      const userProfile = await this.userService.profile.getCurrentUserProfile(
+        userId
+      );
+
+      const response: ApiResponse = {
+        success: true,
+        message: "Current user profile retrieved successfully",
+        data: userProfile,
+      };
+
+      res.status(200).json(response);
+    }
+  );
+
   updateUserProfile = asyncHandler(
     async (req: Request, res: Response): Promise<void> => {
-      const userId = Number(req.params.id);
+      const userId = req.user!.userId; // changed: derive from auth user
       const updateData = req.body;
 
       const userWithoutPassword = await this.userService.profile.updateProfile(
@@ -65,7 +84,7 @@ export class UserController {
 
   updateUserPassword = asyncHandler(
     async (req: Request, res: Response): Promise<void> => {
-      const userId = Number(req.params.id);
+      const userId = req.user!.userId; // changed: derive from auth user
       const { password, newPassword } = req.body;
 
       const userWithoutPassword =
@@ -87,7 +106,7 @@ export class UserController {
 
   followUser = asyncHandler(
     async (req: Request, res: Response): Promise<void> => {
-      const followingUserId = Number(req.params.id);
+      const followingUserId = req.user!.userId; // changed: derive from auth user
       const { followedUserId } = req.body;
 
       const result = await this.userService.follow.followUser(
@@ -107,7 +126,7 @@ export class UserController {
 
   unfollowUser = asyncHandler(
     async (req: Request, res: Response): Promise<void> => {
-      const followingUserId = Number(req.params.id);
+      const followingUserId = req.user!.userId; // changed: derive from auth user
       const { followedUserId } = req.body;
 
       const result = await this.userService.follow.unfollowUser(

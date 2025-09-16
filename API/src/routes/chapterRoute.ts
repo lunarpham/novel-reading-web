@@ -1,10 +1,11 @@
 import { Router } from "express";
-import { StoryController } from "../controllers/storyController";
+import { ChapterController } from "../controllers/chapterController";
 import {
-  validateCreateStory,
-  validateStorySearch,
-  validateUpdateStory,
-} from "../validators/story";
+  chapterQueryValidator,
+  validateCreateChapter,
+  validateUpdateChapter,
+  validateGetChapterById,
+} from "../validators/chapter";
 import {
   validatePaginationQuery,
   handleValidationErrors,
@@ -13,48 +14,47 @@ import {
 import { authenticate } from "../middleware/auth";
 
 const router = Router();
-const storyController = new StoryController();
+const chapterController = new ChapterController();
 
-// Get all stories with pagination
 router.get(
   "/",
-  validateStorySearch,
+  chapterQueryValidator,
   validatePaginationQuery,
   handleValidationErrors,
-  storyController.getAllStories
+  chapterController.getAllChapters
 );
 
-// Get story by ID
+// Get chapter by ID
 router.get(
   "/:id",
   validateParamId,
+  validateGetChapterById,
   handleValidationErrors,
-  storyController.getStoryById
+  chapterController.getChapterById
 );
 
 router.post(
   "/",
   authenticate,
-  validateCreateStory,
+  validateCreateChapter,
   handleValidationErrors,
-  storyController.createStory
+  chapterController.createChapter
 );
 
 router.put(
   "/:id",
   authenticate,
   validateParamId,
-  validateUpdateStory,
+  validateUpdateChapter,
   handleValidationErrors,
-  storyController.updateStory
+  chapterController.updateChapter
 );
 
 router.delete(
   "/:id",
   authenticate,
-  validateParamId,
   handleValidationErrors,
-  storyController.deleteStory
+  chapterController.deleteChapter
 );
 
 export default router;

@@ -13,7 +13,7 @@ import {
 import {
   authenticate,
   requireAdmin,
-  requireSelfOnly,
+  // requireSelfOnly, // removed
 } from "../middleware/auth";
 
 const router = Router();
@@ -26,7 +26,8 @@ router.get(
   userController.getAllUsers
 );
 
-// Get user profile (public)
+router.get("/me", authenticate, userController.getCurrentUser);
+
 router.get(
   "/:id",
   validateParamId,
@@ -34,23 +35,19 @@ router.get(
   userController.getUserProfile
 );
 
-// Update user profile (self only)
+// Update user profile (self via /me)
 router.put(
-  "/:id",
+  "/me",
   authenticate,
-  requireSelfOnly(),
-  validateParamId,
   validateUserProfileUpdate,
   handleValidationErrors,
   userController.updateUserProfile
 );
 
-// Update user password (self only)
+// Update user password (self via /me)
 router.put(
-  "/:id/password",
+  "/me/password",
   authenticate,
-  requireSelfOnly(),
-  validateParamId,
   validateUserPasswordChange,
   handleValidationErrors,
   userController.updateUserPassword
@@ -66,28 +63,25 @@ router.delete(
   userController.deleteUser
 );
 
-// Follow user (self only)
+// Follow user (self via /me)
 router.post(
-  "/:id/following",
+  "/me/following",
   authenticate,
-  requireSelfOnly(),
-  validateParamId,
   validateFollowUserId.followedUserId(),
   handleValidationErrors,
   userController.followUser
 );
 
-// Unfollow user (self only)
+// Unfollow user (self via /me)
 router.delete(
-  "/:id/following",
+  "/me/following",
   authenticate,
-  requireSelfOnly(),
-  validateParamId,
   validateFollowUserId.followedUserId(),
   handleValidationErrors,
   userController.unfollowUser
 );
 
+// Read-only follow lists remain by user id
 router.get(
   "/:id/following",
   validateParamId,

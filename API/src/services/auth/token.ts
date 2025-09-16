@@ -87,6 +87,36 @@ export class TokenService {
     }
   }
 
+  async refreshAccessToken(
+    refreshToken: string,
+    userService: any
+  ): Promise<TokenResponse> {
+    // Verify the refresh token
+    const decoded = this.verifyRefreshToken(refreshToken);
+
+    // Get the user data to generate new tokens
+    const user = await userService.profile.getUserById(decoded.userId);
+
+    if (!user) {
+      throw new AppError(401, "User not found");
+    }
+
+    if (user.isRestricted) {
+      throw new AppError(403, "Account is restricted");
+    }
+
+    // Generate new tokens
+    return this.generateTokens(user);
+  }
+
+  refreshTokenPair(refreshToken: string, user: TokenUser): TokenResponse {
+    // Verify the refresh token first
+    this.verifyRefreshToken(refreshToken);
+
+    // Generate new token pair
+    return this.generateTokens(user);
+  }
+
   extractTokenFromHeader(authHeader: string | undefined): string | null {
     if (!authHeader) {
       return null;
@@ -98,19 +128,6 @@ export class TokenService {
     }
 
     return parts[1];
-  }
-
-  refreshAccessToken(refreshToken: string, user: TokenUser): TokenResponse {
-    // Verify refresh token first
-    const decoded = this.verifyRefreshToken(refreshToken);
-
-    // Ensure refresh token belongs to the user
-    if (decoded.userId !== user.id) {
-      throw new AppError(401, "Invalid refresh token for user");
-    }
-
-    // Generate new tokens
-    return this.generateTokens(user);
   }
 
   isTokenExpired(

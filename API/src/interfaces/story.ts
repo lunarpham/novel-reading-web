@@ -19,23 +19,16 @@ export interface StorySearchParams extends PaginationParams {
   excludeTagLogic?: "and" | "or";
 }
 
-export interface StoryListItem {
-  id: number;
-  title: string;
-  description: string | null;
-  cover: string | null;
-  tags: Tag[];
-  status: Status;
-  wordCount: number;
-  publishedAt: Date | null;
-  createdAt: Date;
+// Base interface using Prisma Story but excluding internal fields
+export interface StoryBase extends Omit<Story, "authorId" | "deletedAt"> {
   author: UserReference;
   _count: CountStats;
   averageRating?: number;
 }
 
-export interface StoryDetail extends StoryListItem {
-  updatedAt: Date;
+export interface StoryListItem extends StoryBase {}
+
+export interface StoryDetail extends StoryBase {
   chapters?: {
     id: number;
     title: string;
@@ -44,16 +37,18 @@ export interface StoryDetail extends StoryListItem {
   }[];
 }
 
-export interface StoryCreationData {
-  title: string;
-  description: string | null;
-  authorId: number;
-  cover: string | null;
-  tags: Tag[];
-  status: Status;
-  wordCount: number;
-  publishedAt: Date | null;
-}
+export interface StoryCreationData
+  extends Pick<
+    Story,
+    | "title"
+    | "description"
+    | "authorId"
+    | "cover"
+    | "tags"
+    | "status"
+    | "wordCount"
+    | "publishedAt"
+  > {}
 
 export interface StoryUpdateData extends Partial<StoryCreationData> {
   id: number;

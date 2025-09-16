@@ -49,6 +49,24 @@ export class AuthService {
     };
   }
 
+  async refreshToken(refreshToken: string): Promise<AuthResult> {
+    const newTokens = await this.tokenService.refreshAccessToken(
+      refreshToken,
+      this.userService
+    );
+
+    // Get user data without password
+    const decoded = this.tokenService.verifyRefreshToken(refreshToken);
+    const user = await this.userService.profile.getUserByIdForAuth(
+      decoded.userId
+    );
+
+    return {
+      user: user!,
+      tokens: newTokens,
+    };
+  }
+
   private async validateUserUniqueness(
     email: string,
     username: string

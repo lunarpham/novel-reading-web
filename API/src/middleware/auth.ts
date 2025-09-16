@@ -30,7 +30,7 @@ export const authenticate = async (
     // Verify the token and get user information
     const decoded = tokenService.verifyAccessToken(token) as JwtPayload;
     // Fetch user from the database to ensure they are not restricted
-    const user = await userService.profile.getUserById(decoded.userId);
+    const user = await userService.profile.getUserByIdForAuth(decoded.userId);
 
     // If user is not found or is restricted, return 401 Unauthorized
     if (!user || user.isRestricted) {
