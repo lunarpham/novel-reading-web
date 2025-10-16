@@ -22,7 +22,24 @@ export interface UserUpdateData {
   gender?: Gender;
 }
 
-export interface UserPublicProfile extends Omit<User, "password"> {}
+export interface UserPublicProfile
+  extends Omit<
+    User,
+    | "password"
+    | "deletedAt"
+    | "updatedAt"
+    | "isRestricted"
+    | "dateOfBirth"
+    | "email"
+  > {}
+
+export interface UserBasicProfile {
+  id: number;
+  username: string;
+  displayName: string;
+  avatarUrl: string | null;
+  role: Role;
+}
 
 export interface FollowData {
   followingUserId: number;

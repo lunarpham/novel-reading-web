@@ -25,17 +25,6 @@ export const handleValidationErrors = (
   next();
 };
 
-// Helper function for type-safe validation creation
-export const createValidationChain = <T>(
-  field: keyof T,
-  validator: ValidationChain,
-  required = true
-): ValidationChain => {
-  return required
-    ? validator.notEmpty().withMessage(`${String(field)} is required`)
-    : validator.optional();
-};
-
 // General query validation rules
 export const validatePaginationQuery = [
   query("page")
